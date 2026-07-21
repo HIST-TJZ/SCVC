@@ -1,0 +1,19 @@
+{
+  "rho_s_GeV4": 1.7757737775226657e+33,
+  "M_KK_GeV": 5.2174792592573203e+17,
+  "m_c_GeV": 0.05997780559270517,
+  "v0_GeV": 7.025920754950957e+17,
+  "naive_scale_GeV": 205280127.9106677,
+  "mu_GeV": 7.025920754950957e+17,
+  "lambda_bare": 1.0,
+  "lambda_compressed": 2.0,
+  "mh_bare_GeV": 9.936152419810258e+17,
+  "mh_compressed_GeV": 1.4051841509901914e+18,
+  "RG_t": 35.29062942970153,
+  "lambda_at_v_numerical": NaN,
+  "lambda_at_v_approx": -0.20561186674687984,
+  "mH_predicted_A": NaN,
+  "ratio_to_LHC": NaN,
+  "verdict": "?? ????",
+  "lambda_at_MKK_from_SM_reverse": 0.07108915863397913
+}
