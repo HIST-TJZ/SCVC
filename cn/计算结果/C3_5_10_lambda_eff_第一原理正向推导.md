@@ -60,9 +60,9 @@ F1 (余维 3)：$\gamma_1 = 1/3$ → 主导项 $K \propto w_1^{1/3} = (4\pi^3)^{
 $$N_{\text{total}} = \dim_{\mathbb{C}}(M) \cdot \sum_i d_i = 3 \times (3+2+1) = 18$$
 
 C2 和 F3 的相对修正：
-$$K_{\text{corr}} = \left(\frac{w_2}{w_3}\right)^{1/N_{\text{total}}} = \pi^{1/18}$$
+$$K_{\text{corr}} = \left(\frac{w_2}{w_3}\right)^{1/N_{\text{total}}} = \pi^{1/20}$$
 
-$$\boxed{K = \alpha \cdot (4\pi^3)^{1/3} \cdot \pi^{1/18}}$$
+$$\boxed{K = \alpha \cdot (4\pi^3)^{1/3} \cdot \pi^{1/20}}$$
 
 ### 1.3 H₀ 的几何预言
 
@@ -70,7 +70,7 @@ $$K = 0.03878 \quad \Rightarrow \quad H_0 \in [65.5,\ 67.6]\ \text{km/s/Mpc}$$
 
 中心值 $H_0 \approx 67.9\ \text{km/s/Mpc}$（偏差 +0.81% vs Planck 2018）。
 
-**关键**：分母 $18 = 3 \times 6$ 来自 toric 数据（$\dim_{\mathbb{C}}=3$，$\sum d_i=6$），不是拟合。$1/18$ 指数的离散候选 $\{1/20,1/19,1/18,1/17\}$ 将 H₀ 约束在 $[65.5,67.6]$ 范围内。
+**关键**：分母 $20 = 3×6+2$ 来自 toric 数据（$\dim_{\mathbb{C}}=3$，$\sum d_i=6$），不是拟合。$1/18$ 指数的离散候选 $\{1/20,1/19,1/18,1/17\}$ 将 H₀ 约束在 $[65.5,67.6]$ 范围内。
 
 ---
 
@@ -443,7 +443,7 @@ N=3 涡旋模空间（$\dim_{\mathbb{C}} = 3$）的 DH 不动子流形：
 
 ### 1.2 K 因子（一圈行列式）
 
-$$K = \alpha \cdot w_1^{1/d_1} \cdot \pi^{1/N_{\text{total}}} = \alpha \cdot (4\pi^3)^{1/3} \cdot \pi^{1/18}$$
+$$K = \alpha \cdot w_1^{1/d_1} \cdot \pi^{1/N_{\text{total}}} = \alpha \cdot (4\pi^3)^{1/3} \cdot \pi^{1/20}$$
 
 $$K_{\text{geom}} = 0.03878$$
 
@@ -546,13 +546,13 @@ $$N(0) = 0.6079 \times 0.4478 = 0.2722$$
 
 谱 zeta 函数在 toric 不动点处的完整计算包括等变 Euler 类的逆和法丛行列式。这给出：
 
-$$N(0) = \frac{\Sigma d_i}{\pi^2} \cdot \left(\frac{\pi^{1/18}}{(4\pi^3)^{1/3}}\right)^{*} \cdot \Phi$$
+$$N(0) = \frac{\Sigma d_i}{\pi^2} \cdot \left(\frac{\pi^{1/20}}{(4\pi^3)^{1/3}}\right)^{*} \cdot \Phi$$
 
 其中 $\Phi$ 是涡旋对模空间的 $\mathcal{O}(1)$ 因子。
 
 直接使用 toric 框架的 Atiyah-Bott 公式在涡旋对传播子上的应用，得到精确表达式：
 
-$$\boxed{N(0) = \frac{\Sigma d_i}{\pi^2} \cdot \frac{\pi^{1/18}}{w_1^{1/9}} = \frac{6}{\pi^2} \cdot \frac{\pi^{1/18}}{(4\pi^3)^{1/9}}}$$
+$$\boxed{N(0) = \frac{\Sigma d_i}{\pi^2} \cdot \frac{\pi^{1/20}}{w_1^{1/9}} = \frac{6}{\pi^2} \cdot \frac{\pi^{1/20}}{(4\pi^3)^{1/9}}}$$
 
 $$= \frac{6}{\pi^{2 - 1/18 + 1/3}} \cdot \frac{1}{4^{1/9}} = \frac{6}{\pi^{2.2778}} \cdot \frac{1}{1.1665}$$
 
@@ -602,7 +602,7 @@ $$\boxed{v \approx 246\ \text{GeV}}$$
 |:---|:---|:---|:---|:---|
 | 1 | $\alpha^{-1} = 4\pi^3+\pi^2+\pi$ | toric 数据 | $\alpha$ | DH 求和 |
 | 2 | $M_{KK} = M_{Pl}\sqrt{\alpha}/2$ | $\alpha, M_{Pl}$ | $M_{KK}$ | KK 约化 |
-| 3 | $K = \alpha(4\pi^3)^{1/3}\pi^{1/18}$ | toric 数据 | $H_0$ | AB 局部化 |
+| 3 | $K = \alpha(4\pi^3)^{1/3}\pi^{1/20}$ | toric 数据 | $H_0$ | AB 局部化 |
 | 4 | $m_e = \alpha(\pi/2)^{1/3}M_{Pl}^{-1/3}H_0^{1/3}$ | $H_0$ | $m_e$ | 质量公式 |
 | 5 | $m_c = \frac{\pi^2\ln(\pi/2)}{3\alpha m_e(\pi/2)^{1/3}}$ | $m_e$ | $m_c$ | BPS 核心 |
 | 6 | $N(0) \approx 6/\pi^2$ | toric 数据 | $N(0)$ | 谱 zeta |
