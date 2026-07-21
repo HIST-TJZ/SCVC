@@ -205,7 +205,7 @@ $$H_0 \propto \left(\frac{m_e}{\alpha}\right)^3 \propto \rho_s^{3/4} \times (\te
 | $\alpha^{-1}$ | $4\pi^3+\pi^2+\pi$ | DH toric | 🟢 锚点 |
 | $M_{KK}$ | $M_{Pl}\sqrt{\alpha}/2$ | KK 约化 | 🟢 |
 | **$\rho_s$** | **$\dfrac{\pi^2\ln(\pi/2)}{6\alpha^3(\pi/2)^{2/3}}$** | **BPS + 涡旋环消去** | **🟢 独立** |
-| $H_0$ | $\approx 67.9$ km/s/Mpc | toric K | 🟢 独立 |
+| $H_0$ | $\approx 67.47$ km/s/Mpc | toric K | 🟢 独立 |
 | $m_e$ | $\approx 0.511$ MeV | 质量公式 | 🟡 依赖 H₀ |
 | $m_c$ | $\approx 3.43\times 10^5$ GeV | BPS 核心 | 🟡 依赖 m_e |
 | $S$ | $\approx 4.76\times 10^{-4}$ GeV² | 涡旋环 | 🟡 依赖 m_e |
@@ -251,4 +251,5 @@ toric截锥几何
 ```
 
 **m_e↔H₀自洽环已被两条独立几何路径打破。** 详见：`C6_11_5_H0_谱zeta_N等于20.md`
+
 
