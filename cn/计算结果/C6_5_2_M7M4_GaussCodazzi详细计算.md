@@ -179,10 +179,6 @@ $$\frac{\text{Vol}(S^1)}{\text{Vol}(SO(3))} = \frac{2\pi}{\pi^2} = \frac{2}{\pi}
 
 ### 6.3 完整因子
 
-$$\frac{8}{\pi} = \frac{H(\mathbb{CP}^2) \cdot \text{Vol}(S^1)}{\kappa(F3) \cdot \text{Vol}(SO(3))} = \frac{4 \cdot 2\pi}{\pi \cdot \pi^2} = \frac{8\pi}{\pi^3} = \frac{8}{\pi^2}$$
-
-嗯，这里有点不对。让我重新来：
-
 $$\frac{8}{\pi} = H(\mathbb{CP}^2) \cdot \frac{\text{Vol}(S^1)}{\text{Vol}(SO(3))} = 4 \cdot \frac{2\pi}{\pi^2} = 4 \cdot \frac{2}{\pi} = \frac{8}{\pi} \quad \checkmark$$
 
 所以 8/π 是 **H(CP²)** 和 **Vol(S¹)/Vol(SO(3))** 的乘积。

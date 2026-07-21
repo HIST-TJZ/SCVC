@@ -117,15 +117,8 @@ Vol(S⁵) = π³
        = ∑_{a,b} X_{ab} X̄_{ba}
        = ∑_{a,b} X_{ab} (−X_{ab})  [因为X̄_{ba} = −X_{ab}]
        = −∑_{a,b} X_{ab} X_{ab}
-
-等等，让我重新来：
-∑_{a,b} X_{ab} X̄_{ba}。对su(3)，X̄_{ba} = (X_{ba})* = −X_{ab}（因为X†=−X意味着(X†)_{ba} = X̄_{ab} = −X_{ba}，所以X̄_{ba} = −X_{ab}）。
-
-∑_{a,b} X_{ab}(−X_{ab}) = −∑_{a,b} X_{ab}·X_{ab}
-
-但这不对...X_{ab}是一般复数，这个表达式不是Tr(X²)。
-
-让我改一种方式做。设X=iT，T Hermitian。那么：
+对su(3)，X†=−X，即X是反Hermitian矩阵。设X=iT，其中T Hermitian。则：
+|Z†XZ|² = |Z†(iT)Z|² = |Z†TZ|²
 |Z†(iT)Z|² = |Z†TZ|²（因为|i|=1）
 
 Z†TZ = ∑_{a,b} Z̄_a T_{ab} Z_b，这是实数（因为T Hermitian）。
