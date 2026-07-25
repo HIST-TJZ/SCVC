@@ -1,0 +1,29 @@
+=== vortex_object.gd ===
+  L163: 		return "[BAD]?
+  L173: 	var base = ["[BAD]?,"[BAD]?,"[BAD]?][best]
+  L254: # m_u/m_e=3[BAD]?, m_d/m_u=(5/3)^(3/2), m_c/m_u=6π[BAD]? m_s/m_d=2π², etc.
+=== main.gd ===
+  L60: # m_u/m_e=3[BAD]?, m_d/m_u=(5/3)^(3/2), m_c/m_u=6π[BAD]? etc.
+  L63: const MF_U = 4.2426     # 3[BAD]?
+  L64: const MF_D = 9.1317     # 3[BAD]? × (5/3)^(3/2)
+  L66: const MF_TAU = 3507.0   # 36π[BAD]?const MF_S = 180.2      # 2π² × m_d/m_e
+  L67: const MF_C = 2480.0     # 6π[BAD]?× 3[BAD]?
+  L68: const MF_B = 8004.0     # 9π[BAD]?× m_d/m_e
+  L69: const MF_T = 339840.0   # 6π[BAD]?× DH × 3[BAD]?
+  L175: 		status_label.text = _tr("POOL FULL! Max " + str(physics.POOL_SIZE) + " particles.", "对象池已满！上限" + str(physics.POOL_SIZE) + "个粒子[BAD]?)
+  L190: 		return _tr("u-quark (bright)", "上夸[BAD]?[BAD]?")
+  L192: 		return _tr("u-quark (medium)", "上夸[BAD]?[BAD]?")
+  L194: 		return _tr("u-quark (dark)", "上夸[BAD]?[BAD]?")
+  L196: 		return _tr("d-quark (bright)", "下夸[BAD]?[BAD]?")
+  L198: 		return _tr("d-quark (medium)", "下夸[BAD]?[BAD]?")
+  L200: 		return _tr("d-quark (dark)", "下夸[BAD]?[BAD]?")
+  L204: 		return _tr("neutrino", "中微[BAD]?)
+  L205: 	return _tr("custom", "自定[BAD]?)
+  L231: 		lines.append(_tr("MODE: particle", "模式：粒[BAD]?))
+  L243: 			lines.append(_tr("[BAD]?TIME FROZEN [P=toggle]", "[BAD]?时停 [P=切换]"))
+  L245: 			var sv = _tr("ON", "开") if physics.springs_visible else _tr("OFF", "[BAD]?)
+  L246: 			lines.append(_tr("SPRINGS: " + sv + " [K=toggle]", "连接[BAD]? " + sv + " [K=切换]"))
+  L250: 			lines.append(_tr("SNAPSHOT MODE [Space=off, S=flash]", "快照模式 [空格=[BAD]? S=闪照]"))
+  L256: 	ui_label.text = _tr("[Panel] select particle  [Click] place  [Drag] move vortex\n[Shift] anti-particle  [Del] clear  [L] CN/EN  [P] freeze  [K] springs  [M] full SM", "[面板] 选择粒子  [点击] 放置  [拖拽] 移动涡旋\n[Shift] 反粒[BAD]? [Del] 清空  [L] [BAD]?[BAD]? [P] 时停  [K] 连接[BAD]? [M] 全SM")
+  L263: 		"[操作说明]\n  右侧面板 = 选择粒子    [ / ] = 调整高度\n  左键短点 = 放置粒子    左键拖动 = 拖拽涡旋\n  右键拖动 = 旋转镜头    中键拖动 = 平移\n  滚轮 = 缩放    WASD/QE = 移动镜头    HOME = 重置\n  Shift = 反粒[BAD]?   P = 时停    K = 连接线开关\n  M = 全SM粒子    L = [BAD]?[BAD]?   Del = 清空\n\n[如何合成质子/中子]\n  质子 = u([BAD]?+u([BAD]?+d([BAD]?  (全红色系)\n  中子 = d([BAD]?+d([BAD]?+u([BAD]?  (全绿色系)\n  [BAD]?个夸克在1.5单位[BAD]?= 自动束缚!"
+  L282: 		status_label.text = _tr("DECAY: " + ("ON" if physics.decay_mode else "OFF"), "衰变: " + ("开" if physics.decay_mode else "[BAD]?))

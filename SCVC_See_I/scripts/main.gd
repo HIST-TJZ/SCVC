@@ -20,6 +20,7 @@ var spin_up: bool = true  # spin toggle for lepton rings
 var _last_preset_name: String = ""
 var lang: int = 0  # 0=EN, 1=CN
 var full_sm_mode: bool = false  # toggle for full SM particle spectrum
+var _orbit_view_active: bool = false  # dedicated flag for O key, independent of B
 var _track_com: bool = false  # F toggles: camera follows center-of-mass
 var _com_marker: MeshInstance3D = null  # visual marker at COM
 var ground_plane: Plane = Plane(Vector3.UP, 0.0)
@@ -128,6 +129,23 @@ func _input(event):
 			KEY_P: _toggle_freeze()
 			KEY_K: _toggle_springs()
 			KEY_V: _toggle_decay()
+			KEY_B: _toggle_quarks()
+			KEY_N:
+				if physics:
+					if event.shift_pressed:
+						physics.ring_visual_scale = max(physics.ring_visual_scale / 1.5, 0.3)
+					else:
+						physics.ring_visual_scale = min(physics.ring_visual_scale * 1.5, 10.0)
+					status_label.text = _tr("RING SIZE: %.1fx" % physics.ring_visual_scale, "???: %.1fx" % physics.ring_visual_scale)
+			KEY_EQUAL:
+				if physics:
+					physics.quark_visual_scale = min(physics.quark_visual_scale * 1.5, 10.0)
+					status_label.text = "QUARK: %.1fx" % physics.quark_visual_scale
+			KEY_MINUS:
+				if physics:
+					physics.quark_visual_scale = max(physics.quark_visual_scale / 1.5, 0.3)
+					status_label.text = "QUARK: %.1fx" % physics.quark_visual_scale
+			KEY_O: _toggle_orbit_view()
 			KEY_T: _speed_up()
 			KEY_G: _slow_down()
 			KEY_F: _toggle_track_com()
@@ -160,10 +178,17 @@ func _is_vortex_at(screen_pos: Vector2) -> bool:
 
 # Check if mouse is over UI panel (prevent click-through)
 func _is_mouse_over_ui() -> bool:
-	if not _panel or not _panel.visible: return false
-	var mouse_pos = _panel.get_local_mouse_position()
-	var panel_rect = Rect2(Vector2.ZERO, _panel.size)
-	return panel_rect.has_point(mouse_pos)
+	# Check right particle panel
+	if _panel and _panel.visible:
+		var mp = _panel.get_local_mouse_position()
+		if Rect2(Vector2.ZERO, _panel.size).has_point(mp):
+			return true
+	# Check left scene panel
+	if _scene_panel and _scene_panel.visible:
+		var mp2 = _scene_panel.get_local_mouse_position()
+		if Rect2(Vector2.ZERO, _scene_panel.size).has_point(mp2):
+			return true
+	return false
 
 func _try_place_vortex(screen_pos: Vector2):
 	var cam = $Camera3D
@@ -184,7 +209,7 @@ func _try_place_vortex(screen_pos: Vector2):
 		if ring:
 			ring.normal = Vector3.UP if spin_up else Vector3.DOWN
 		if not ring:
-			status_label.text = _tr("Cannot create ring", "Cannot create ring")
+			status_label.text = _tr("Cannot create ring", "无法创建环")
 	else:
 		# Quark: create point vortex
 		var created = physics.create_vortex(pos, wc1, wc2, ww, wy, Vector3.ZERO, sel_mf)
@@ -301,14 +326,14 @@ func _update_status():
 	status_label.text = "\n".join(lines)
 
 func _update_ui_labels():
-	ui_label.text = _tr("[Panel] select particle  [Click] place  [Drag] move vortex\n[Shift] anti-particle  [Del] clear  [L] CN/EN  [P] freeze  [K] springs  [M] full SM", "[Panel] select  [Click] place  [Drag] move\n[Shift] anti  [Del] clear  [L] lang  [P] freeze")
+	ui_label.text = _tr("[Panel] select  [Click] place  [Drag] move  [Scroll] zoom\n[Shift] anti  [P] freeze  [K] springs  [M] full SM  [L] lang\n[T/G] speed  [F] track  [B] quarks  [O] orbit  [V] decay  [Space] snap  [Del] clear", "[面板] 选择  [点击] 放置  [拖拽] 移动  [滚轮] 缩放\n[Shift] 反粒子  [P] 冻结  [K] 弹簧  [M] 全SM  [L] 语言\n[T/G] 速度  [F] 追踪  [B] 夸克  [O] 轨道  [V] 衰变  [Space] 快照  [Del] 清除")
 	_update_help()
 
 func _update_help():
 	if not help_label: return
 	help_label.text = _tr(
-		"[CONTROLS]\n  Panel = select particle    [ / ] = adjust height\n  Left Click (short) = place    Left Drag = move vortex\n  Right Drag = orbit camera    Middle Drag = pan\n  Scroll = zoom    WASD/QE = move camera    HOME = reset\n  Shift = anti-particle    P = freeze    K = toggle springs\n  M = full SM    L = CN/EN    T/G = speed    F = track COM\n  ,/. = ring radius    Del = clear all\n  [LEFT PANEL] = load preset scenes\n\n[HOW TO FORM A PROTON]\n  Proton = u(bright,R)+u(medium,G)+d(dark,B)  (2u+1d, color singlet)\n  Neutron = d(bright,R)+d(medium,G)+u(dark,B) (2d+1u, color singlet)\n  Place 3 quarks within ~1.5 units = auto-bind!\n\n[SCVC LIMITATIONS]\n  Photon: not a vortex; EM force is via effective potential.\n  e+e- annihilation: ring-ring not implemented (needs photon).\n  Bound neutron decay: not yet implemented.\n  Molecules: bond lengths from experiment (yellow), not SCVC.",
-		"[操作说明]\n  面板 = 选择粒子    [ / ] = 调整高度\n  左键短按 = 放置    左键拖拽 = 移动涡旋\n  右键拖拽 = 旋转视角    中键拖拽 = 平移\n  滚轮 = 缩放    WASD/QE = 移动相机    HOME = 重置\n  Shift = 反粒子    P = 冻结    K = 切换弹簧显示\n  M = 全SM模式    L = 中/英    T/G = 加速/减速    F = 追踪质心\n  ,/. = 环半径    Del = 清除全部\n  [左侧面板] = 加载预设场景\n\n[如何构成质子]\n  质子 = u(亮,R)+u(中,G)+d(暗,B)  (2u+1d, 色单态)\n  中子 = d(亮,R)+d(中,G)+u(暗,B)  (2d+1u, 色单态)\n  将3个夸克放置在~1.5单位内 = 自动绑定！\n\n[SCVC 已知限制]\n  光子：非涡旋结构；电磁力通过有效势能项实现。\n  e+e-湮灭：环-环湮灭未实现（需要光子机制）。\n  束缚中子衰变：尚未实现。\n  分子：键长取自实验结果（黄色标注），非SCVC推导。"
+		"[CONTROLS]\n  Panel = select particle    [ / ] = adjust height\n  Left Click (short) = place    Left Drag = move vortex\n  Right Drag = orbit camera    Middle Drag = pan\n  Scroll = zoom    WASD/QE = move camera    HOME = reset\n  Shift = anti-particle    P = freeze    K = toggle springs\n  M = full SM    L = CN/EN    T = speed x10    G = slow x0.1\n  F = track COM    B = hide quarks    O = orbit view    V = decay mode\n  N = ring size+    Shift+N = ring size-\n  Space = snapshot    Del = clear all    ,/. = ring radius\n  H = BEC vacuum field    [Left Panel] = preset scenes\n\n[HOW TO FORM A PROTON]\n  Proton = u(bright,R)+u(medium,G)+d(dark,B)  (2u+1d, color singlet)\n  Neutron = d(bright,R)+d(medium,G)+u(dark,B) (2d+1u, color singlet)\n  Place 3 quarks within ~1.5 units = auto-bind!\n\n[SCVC LIMITATIONS]\n  Photon: not a vortex; EM force via effective potential.\n  e+e- annihilation: ring-ring not implemented (needs photon).\n  Bound neutron decay: not yet implemented.\n  Molecules: bond lengths from experiment (yellow), not SCVC.",
+		"[操作说明]\n  面板 = 选择粒子    [ / ] = 调整高度\n  左键短按 = 放置    左键拖拽 = 移动涡旋\n  右键拖拽 = 旋转视角    中键拖拽 = 平移\n  滚轮 = 缩放    WASD/QE = 移动相机    HOME = 重置\n  Shift = 反粒子    P = 冻结    K = 弹簧显示\n  M = 全SM模式    L = 中/英    T = 加速x10    G = 减速x0.1\n  F = 追踪质心    B = 隐藏夸克    O = 轨道视图    V = 衰变模式\n  Space = 快照    Del = 清除全部    ,/. = 环半径\n  H = BEC真空场    [左侧面板] = 预设场景\n\n[如何构成质子]\n  质子 = u(亮,R)+u(中,G)+d(暗,B)  (2u+1d, 色单态)\n  中子 = d(亮,R)+d(中,G)+u(暗,B)  (2d+1u, 色单态)\n  将3个夸克放置在~1.5单位内 = 自动绑定！\n\n[SCVC 已知限制]\n  光子：非涡旋结构；电磁力通过有效势能项实现。\n  e+e-湮灭：环-环湮灭未实现（需要光子机制）。\n  束缚中子衰变：尚未实现。\n  分子：键长取自实验结果（黄色标注），非SCVC推导。"
 	)
 
 func _process(_delta: float):
@@ -364,6 +389,34 @@ func _toggle_freeze():
 		physics.toggle_freeze()
 		_update_status()
 
+func _toggle_orbit_view():
+	if physics:
+		# Toggle freeze + hide quarks for clean shell view
+		if physics.time_frozen and not physics.show_quarks:
+			# Currently in orbit view - restore
+			physics.time_frozen = false
+			physics.show_quarks = true
+			status_label.text = _tr("ORBIT VIEW: OFF", "轨道视图: 关")
+		else:
+			# Enter orbit view
+			physics.time_frozen = true
+			physics.show_quarks = false
+			status_label.text = _tr("ORBIT VIEW: ON (frozen, shells only)", "轨道视图: 开(冻结,仅壳层)")
+		await get_tree().create_timer(1.5).timeout
+		_update_status()
+
+func _toggle_quarks():
+	if not physics: return
+	# If in orbit view, exit orbit view first (O key semantics)
+	if _orbit_view_active:
+		_orbit_view_active = false
+		physics.time_frozen = false
+	physics.toggle_quarks()
+	var txt := _tr("QUARKS: " + ("ON" if physics.show_quarks else "OFF"), "QUARKS: " + ("ON" if physics.show_quarks else "OFF"))
+	status_label.text = txt
+	await get_tree().create_timer(1.5).timeout
+	_update_status()
+
 func _toggle_decay():
 	if physics:
 		physics.toggle_decay()
@@ -398,19 +451,28 @@ func _place_nucleus(pos: Vector3, Z: int, N: int):
 	var total = Z + N
 	var placed = 0
 	# Protons: uud each
+	var nuc_quarks: Array = []
 	for i in range(Z):
 		var off = Vector3(randf()-0.5, 0, randf()-0.5).normalized() * r_nuc * randf()
 		var pp = pos + off
-		physics.create_vortex(pp + Vector3(0.2,0,0),  1.0, 0.0, 0.5, 0.1667, Vector3.ZERO, MF_U)
-		physics.create_vortex(pp + Vector3(-0.1,0,0.17), -0.5, 0.866, 0.5, 0.1667, Vector3.ZERO, MF_U)
-		physics.create_vortex(pp + Vector3(-0.1,0,-0.17), -0.5, -0.866, -0.5, 0.1667, Vector3.ZERO, MF_D)
+		nuc_quarks.append(physics.create_vortex(pp + Vector3(0.2,0,0),  1.0, 0.0, 0.5, 0.1667, Vector3.ZERO, MF_U))
+		nuc_quarks.append(physics.create_vortex(pp + Vector3(-0.1,0,0.17), -0.5, 0.866, 0.5, 0.1667, Vector3.ZERO, MF_U))
+		nuc_quarks.append(physics.create_vortex(pp + Vector3(-0.1,0,-0.17), -0.5, -0.866, -0.5, 0.1667, Vector3.ZERO, MF_D))
 	# Neutrons: ddu each
 	for i in range(N):
 		var off = Vector3(randf()-0.5, 0, randf()-0.5).normalized() * r_nuc * randf()
 		var np = pos + off
-		physics.create_vortex(np + Vector3(0.2,0,0),  1.0, 0.0, -0.5, 0.1667, Vector3.ZERO, MF_D)
-		physics.create_vortex(np + Vector3(-0.1,0,0.17), -0.5, 0.866, -0.5, 0.1667, Vector3.ZERO, MF_D)
-		physics.create_vortex(np + Vector3(-0.1,0,-0.17), -0.5, -0.866, 0.5, 0.1667, Vector3.ZERO, MF_U)
+		nuc_quarks.append(physics.create_vortex(np + Vector3(0.2,0,0),  1.0, 0.0, -0.5, 0.1667, Vector3.ZERO, MF_D))
+		nuc_quarks.append(physics.create_vortex(np + Vector3(-0.1,0,0.17), -0.5, 0.866, -0.5, 0.1667, Vector3.ZERO, MF_D))
+		nuc_quarks.append(physics.create_vortex(np + Vector3(-0.1,0,-0.17), -0.5, -0.866, 0.5, 0.1667, Vector3.ZERO, MF_U))
+	# Center nucleus COM
+	var nuc_com := Vector3.ZERO
+	for q in nuc_quarks:
+		if is_instance_valid(q): nuc_com += q.position
+	if nuc_quarks.size() > 0:
+		nuc_com /= float(nuc_quarks.size())
+		for q in nuc_quarks:
+			if is_instance_valid(q): q.position += pos - nuc_com
 
 # Place electron ring at compressed Bohr-like orbit
 ## SCVC Slater Z_eff: uses geometry-derived shielding (09_Slater常数_几何推导结果.md)
@@ -526,6 +588,30 @@ func _place_electron_ring(nucleus_pos: Vector3, n_shell: int, angle_offset: floa
 	if ring and ring.has_method("setup_bohr_orbit"):
 		ring.setup_bohr_orbit(n_shell, nucleus_pos, Z_nuc, scale_comp, angle_offset, zeff)
 	return ring
+
+
+## SCVC HONESTY: Utility -- recenters all nuclei so COM is at origin.
+## Molecular scenes place nuclei at absolute coords; this shifts everything
+## so the largest atom doesn"t end up off-center.
+func _center_all_nuclei():
+	var com := Vector3.ZERO
+	var total_mass := 0.0
+	for v in physics.vortices:
+		if is_instance_valid(v) and v.visible:
+			var mf: float = v.mass_factor if v.mass_factor > 0.01 else 1.0
+			com += v.position * mf
+			total_mass += mf
+	if total_mass < 1.0:
+		return
+	com /= total_mass
+	for v in physics.vortices:
+		if is_instance_valid(v):
+			v.position -= com
+	for r in physics.rings:
+		if is_instance_valid(r) and r.active:
+			r.position -= com
+			if r.has_method("setup_bohr_orbit") and r.nucleus_position != Vector3.ZERO:
+				r.nucleus_position -= com
 
 # ========== SCENE PRESETS ==========
 
@@ -808,6 +894,7 @@ func _scene_h2():
 ## SCVC HONESTY: 🟡 Empirical (bond length from QM, not SCVC)
 ## SCVC-locked: electron winding, EM coupling. NOT SCVC: D_H2=0.741A (QM).
 # H2+ Ion: 2 protons + 1 shared electron ring (I2 single-electron bond)
+	_center_all_nuclei()
 ## [TIME] STATIC: ring at midpoint, quasi-static. Dynamics too slow for equilibration.
 func _scene_h2_plus():
 	const D_H2_SIM: float = 14.0
@@ -820,6 +907,7 @@ func _scene_h2_plus():
 ## SCVC HONESTY: 🟡 Empirical (bond length from QM, not SCVC)
 ## SCVC-locked: electron winding, Pauli singlet. NOT SCVC: bond length (QM).
 # HeH+: Helium nucleus + proton + 2 electron rings (I2: asymmetric bond)
+	_center_all_nuclei()
 ## [TIME] STATIC: rings at I2 equilibrium positions. Asymmetric bond, quasi-static.
 func _scene_heh_plus():
 	const D_BOND: float = 14.0
@@ -837,6 +925,7 @@ func _scene_heh_plus():
 ## Two isolated H atoms at arbitrary separation. Purely for comparison with H2 scene.
 ## No SCVC derivation for the separation distance (30sim = visual choice).
 # H2 Separated: two isolated H atoms far apart (I2 control)
+	_center_all_nuclei()
 ## [TIME] STATIC: two isolated H atoms at arbitrary distance. Control scene, no evolution.
 func _scene_h2_separated():
 	const SEP: float = 30.0  # far enough, no bond
@@ -850,6 +939,7 @@ func _scene_h2_separated():
 ## Two H atoms with FREE electron rings (no orbital constraint).
 ## VFM Biot-Savart drives ring-ring and ring-quark dynamics.
 ## If covalent bond forms: rings move to bond region, protons settle.
+	_center_all_nuclei()
 # H2 VFM Test: 2 protons + 2 free electron rings
 func _scene_h2_vfm():
 	const SEP: float = 30.0
@@ -865,6 +955,7 @@ func _scene_h2_vfm():
 ## SCVC HONESTY: yellow Empirical (bond length/angle from experiment)
 ## SCVC-locked: atomic shells (Z_eff from Slater), Pauli, shell radii.
 ## NOT SCVC: bond length & angle (experimental). Rings placed at parent nuclei.
+	_center_all_nuclei()
 # LiH: Li(1s2 2s1) + H(1s1), d=1.595A
 func _scene_lih():
 	var d: float = 1.595 * 18.89  # 30.1 sim
@@ -880,6 +971,7 @@ func _scene_lih():
 	_place_electron_ring(Vector3(0,  d2, 0), 1, 0, 1, 400.0, _compute_zeff(1,1,0,0))
 
 ## SCVC HONESTY: yellow Empirical. O-H=0.958A, H-O-H=104.5 deg.
+	_center_all_nuclei()
 # H2O: O(1s2 2s2 2p4) + 2H
 func _scene_h2o():
 	var d_OH: float = 0.958 * 18.89  # 18.1 sim
@@ -901,6 +993,7 @@ func _scene_h2o():
 	_place_electron_ring(Vector3(-dx, 0, dz), 1, 0, 1, 400.0, _compute_zeff(1,1,0,0))
 
 ## SCVC HONESTY: yellow Empirical. N-H=1.012A, H-N-H=107 deg.
+	_center_all_nuclei()
 # NH3: N(1s2 2s2 2p3) + 3H, trigonal pyramid
 func _scene_nh3():
 	var d_NH: float = 1.012 * 18.89  # 19.1 sim
@@ -927,6 +1020,7 @@ func _scene_nh3():
 		_place_electron_ring(Vector3(r*cos(a), 0, r*sin(a)), 1, 0, 1, 400.0, _compute_zeff(1,1,0,0))
 
 ## SCVC HONESTY: yellow Empirical. C-H=1.087A, tetrahedral 109.5 deg.
+	_center_all_nuclei()
 # CH4: C(1s2 2s2 2p2) + 4H, tetrahedron
 func _scene_ch4():
 	var d_CH: float = 1.087 * 18.89  # 20.5 sim
@@ -956,6 +1050,7 @@ func _scene_ch4():
 ## SCVC HONESTY: 🟢 SCVC-locked (same as hydrogen)
 ## 1p+1e. All parameters from SCVC. Same orbit as all H isotopes (Z=1).
 ## [TIME] ~70 min/orbit (v=0.00025/frame, 2π×10sim). Dynamics correct, just slow.
+	_center_all_nuclei()
 # H-1 Protium: 1p + 1e (stable, identical to hydrogen scene)
 func _scene_h1():
 	_place_nucleus(Vector3.ZERO, 1, 0)

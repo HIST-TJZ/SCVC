@@ -65,10 +65,49 @@ const QUARK_PI_OVER_8: float = 0.3927  # pi/8 QCD color-confinement screening fa
 #   Channel B: Gauge forces (G_EM, G_STRONG, modulated by w-dot-w)
 #   Channel C: Pauli topological repulsion (three-region potential)
 # Total force: F = F_BS + F_gauge + F_Pauli
-const VFM_KAPPA: float = 1.0  # Unified circulation: topological invariant (all particles)
+const VFM_KAPPA: float = -1.0  # SCVC sign convention: CCW ring self-induces UP (verified 2026-07-24)
 const VFM_CORE_A: float = XI * 0.5  # Desingularization: vortex core radius (XI=0.25 -> a=0.125)
 const VFM_SELF_CORE_FACTOR: float = 0.5  # Self-induction desingularization: segment arc length factor
 const RHO_S_EFFECTIVE: float = 6.5797   # = 2*pi^2/3 (GP vortex geometry, shared with vortex_ring.gd)
+
+# ===== N1: Nucleon-Nucleon Potential (SCVC First-Principles, 2026-07-24) =====
+# EVERY parameter has its OWN SCVC scaling formula (NOT a universal factor!)
+#
+# SCVC LENGTH ANCHOR: sim_per_fm = sim_per_A * 0.01 = 18.89 * 0.01 = 0.1889 sim/fm
+#   (from A0_SIM=4016.1 sim = a0=0.529 A = 52.9 fm, CROSS_VALIDATION_HANDOFF)
+# SCVC ENERGY ANCHOR: E_SCALE_BEC = 0.4793 MeV/sim_E (B1 bridge)
+#
+# Scaling formulas (each property type has its own):
+#   Inverse length m [sim^-1] = m_phys[MeV] / (hbar_c[MeV*fm]) / sim_per_fm[sim/fm]
+#   Energy*length V0 [sim_E*sim_L] = V0_phys[MeV*fm] * sim_per_fm[sim/fm] / E_SCALE_BEC[MeV/sim_E]
+#   Dimensionless (g_piNN=12.9): unchanged in all unit systems
+#
+# N1 SCVC-derived physical values (zero free parameters):
+#   m_pi = 140 MeV (GMOR + SCVC quark masses)
+#   g_piNN = 12.9 (Goldberger-Treiman, from SCVC g_A=1.27, f_pi=92 MeV)
+#   M_N = 938 MeV (nucleon mass)
+#   m_omega = 782 MeV (Regge trajectory, from SCVC string tension)
+#   A_core = 2000 MeV*fm (omega exchange + vortex topology overlap)
+#   hbar_c = 197.3 MeV*fm
+#
+# Spin-isospin factor (tau*tau)(sigma*sigma)/9 (NOT yet implemented per-cluster):
+#   T=0,S=1 (deuteron): -1/3 (attractive OPEP) | T=1,S=0 (singlet): -1/3
+#   T=1,S=1: +1/9 (repulsive) | T=0,S=0: +1 (repulsive)
+#   Current: factor=1.0 (SCVC HONESTY: averaging over states, no spin tracking)
+#
+# Reference: N1_NucleonNucleon_SCVC_Derivation_results.md
+const NN_SIM_PER_FM: float = 0.1889     # SCVC length anchor: sim_per_A * 0.01
+const NN_M_PI: float = 3.7564           # = 140 / 197.3 / 0.1889 sim^-1, OPEP range=0.266 sim=1.41 fm
+const NN_V_PI: float = 0.009689         # = gpNN^2/4pi * mpi^2/(12*MN^2) * sim_per_fm / E_SCALE_BEC
+const NN_M_OMEGA: float = 20.982        # = 782 / 197.3 / 0.1889 sim^-1, core range=0.048 sim=0.25 fm
+const NN_V_CORE: float = 788.23         # = 2000 * sim_per_fm / E_SCALE_BEC
+const NN_SPIN_ISOSPIN_FACTOR: float = 1.0  # SCVC HONESTY: no per-nucleon spin/isospin tracking yet
+const NN_MIN_CLUSTER_SIZE: int = 3      # Only nucleon-sized clusters (>=3 quarks) feel NN force
+const NN_FORCE_CAP: float = 200.0       # Numerical guard: cap per-cluster force (SCVC HONESTY: hard core
+                                         # is ~30000 at r=0.1 sim, 1500 at r=0.2 sim. Cap only affects
+                                         # extreme short-range where timestep can't resolve.)
+
+var _nn_enabled: bool = true            # Master switch for NN potential
 
 ## VFM master switch: false = legacy log-potential forces, true = Biot-Savart velocities
 var vfm_enabled: bool = true
@@ -76,6 +115,8 @@ var vfm_enabled: bool = true
 ## Time acceleration multiplier: 1.0=realtime, 10=10x, 100=100x
 ## Only affects physics delta, not rendering.
 var time_scale: float = 1.0
+var ring_visual_scale: float = 1.0  # visual scale of ring segments (N/SHIFT+N)
+var quark_visual_scale: float = 1.0  # visual scale of quark spheres (-/=)
 
 const POOL_SIZE: int = 400
 
@@ -88,6 +129,9 @@ var _pair_cooldown: int = 0
 var snapshot_mode: bool = false
 var _snap_frame: int = 0
 var decay_mode: bool = false    # V toggles resonance decay
+var show_quarks: bool = true     # H toggles quark visibility
+var _cluster_cache := []       # cached cluster COMs
+var _cluster_cache_frame := -1  # frame when cache was built
 var _batch_mesh: MultiMeshInstance3D = null  # batched GPU rendering for all quarks
 var _batch_glow: MultiMeshInstance3D = null  # batched glow shells
 var _batch_material: StandardMaterial3D = null
@@ -223,7 +267,7 @@ func _update_batch_render():
 			break
 		if is_nan(v.position.x) or is_nan(v.position.y) or is_nan(v.position.z):
 			continue
-		var t := Transform3D(Basis(), v.position)
+		var t := Transform3D(Basis().scaled(Vector3(quark_visual_scale, quark_visual_scale, quark_visual_scale)), v.position)
 		var col: Color = v.display_color()
 		_safe_set_transform(_batch_mesh.multimesh, count, t)
 		_batch_mesh.multimesh.set_instance_color(count, col)
@@ -234,8 +278,12 @@ func _update_batch_render():
 	for i in range(count, POOL_SIZE):
 		_safe_set_transform(_batch_mesh.multimesh, i, Transform3D(Basis().scaled(Vector3.ZERO), Vector3(0, -999, 0)))
 		_safe_set_transform(_batch_glow.multimesh, i, Transform3D(Basis().scaled(Vector3.ZERO), Vector3(0, -999, 0)))
-	_batch_mesh.multimesh.visible_instance_count = count
-	_batch_glow.multimesh.visible_instance_count = count
+	if show_quarks:
+		_batch_mesh.multimesh.visible_instance_count = count
+		_batch_glow.multimesh.visible_instance_count = count
+	else:
+		_batch_mesh.multimesh.visible_instance_count = 0
+		_batch_glow.multimesh.visible_instance_count = 0
 	# Ring segments
 	if not _batch_ring_segs or not _batch_ring_springs:
 		return
@@ -251,34 +299,35 @@ func _update_batch_render():
 			var gp = seg.global_position
 			if is_nan(gp.x) or is_nan(gp.y) or is_nan(gp.z):
 				continue
-			var t := Transform3D(Basis(), gp)
+			var t := Transform3D(Basis().scaled(Vector3(ring_visual_scale, ring_visual_scale, ring_visual_scale)), gp)
 			_safe_set_transform(_batch_ring_segs.multimesh, seg_count, t)
 			_batch_ring_segs.multimesh.set_instance_color(seg_count, col)
 			seg_count += 1
 	for i in range(seg_count, MAX_RING_SEGS):
 		_safe_set_transform(_batch_ring_segs.multimesh, i, Transform3D(Basis().scaled(Vector3.ZERO), Vector3(0, -999, 0)))
 	_batch_ring_segs.multimesh.visible_instance_count = seg_count
-	# Ring springs
+	# Ring springs: use EXACT same node positions as segment batch render
 	var spring_count: int = 0
 	for ring in rings:
 		if not is_instance_valid(ring) or not ring.active: continue
-		var springs = ring.get_spring_nodes()
-		for sp in springs:
-			if not is_instance_valid(sp): continue
+		var segs = ring.get_segment_nodes()
+		var n_seg: int = segs.size()
+		for i in range(n_seg):
 			if spring_count >= MAX_RING_SPRINGS: break
-			var a: Vector3 = sp.get_meta("seg_a_pos", sp.global_position)
-			if is_nan(a.x) or is_nan(a.y) or is_nan(a.z):
-				continue
-			var b: Vector3 = sp.get_meta("seg_b_pos", sp.global_position + Vector3.UP * 0.1)
-			if is_nan(b.x) or is_nan(b.y) or is_nan(b.z):
-				continue
+			var j: int = (i + 1) % n_seg
+			var seg_a = segs[i]
+			var seg_b = segs[j]
+			if not is_instance_valid(seg_a) or not is_instance_valid(seg_b): continue
+			var a: Vector3 = seg_a.global_position
+			var b: Vector3 = seg_b.global_position
+			if is_nan(a.x) or is_nan(a.y) or is_nan(a.z): continue
+			if is_nan(b.x) or is_nan(b.y) or is_nan(b.z): continue
 			var mid := (a + b) * 0.5
 			var diff := b - a
 			var length := diff.length()
 			if length < 0.001: continue
 			var dir := diff / length
-			if is_nan(dir.x) or is_nan(dir.y) or is_nan(dir.z):
-				continue
+			if is_nan(dir.x) or is_nan(dir.y) or is_nan(dir.z): continue
 			var basis := Basis()
 			var up := Vector3.UP
 			if abs(dir.dot(up)) > 0.99: up = Vector3.RIGHT
@@ -287,7 +336,7 @@ func _update_batch_render():
 			right = right.normalized()
 			up = right.cross(dir).normalized()
 			basis = Basis(right, dir, up)
-			var t := Transform3D(basis, mid).scaled(Vector3(1, length, 1))
+			var t := Transform3D(basis.scaled(Vector3(ring_visual_scale, length, ring_visual_scale)), mid)
 			_safe_set_transform(_batch_ring_springs.multimesh, spring_count, t)
 			_batch_ring_springs.multimesh.set_instance_color(spring_count, Color(0.3, 0.5, 0.9, 0.7))
 			spring_count += 1
@@ -344,73 +393,78 @@ func _process(delta: float):
 			for v in vortices:
 				if is_instance_valid(v): v.visible = false
 
-	# Physics always runs
-	compute_forces()
-	update_springs()
-	if _frame % 4 == 0:
-		check_bindings()
-		check_breakings()
-	if decay_mode and _frame % 15 == 0:
-		_check_resonance_decay()
-		_check_neutron_decay()
-	energy = total_energy()
-	for v in vortices:
-		if is_instance_valid(v) and not v.is_dragging:
-			v.physics_update(phys_delta, v.force_accum)
-		if is_nan(v.position.x) or is_nan(v.position.y) or is_nan(v.position.z): v.position = Vector3(0,10,0)
-	# Per-cluster COM: update constrained rings to follow their nucleus (every 4 frames)
-	var _visited := {}
-	var _clusters := []
-	for v in vortices:
-		if not is_instance_valid(v) or not v.visible: continue
-		var vid: int = v.get_instance_id()
-		if _visited.has(vid): continue
-		var _cluster := []
-		var _queue := [v]
-		_visited[vid] = true
-		while not _queue.is_empty():
-			var curr = _queue.pop_front()
-			_cluster.append(curr)
-			for other in vortices:
-				if not is_instance_valid(other): continue
-				var oid: int = other.get_instance_id()
-				if _visited.has(oid): continue
-				if curr.is_bound_to(other):
-					_visited[oid] = true
-					_queue.append(other)
-		if _cluster.size() >= 2:
-			_clusters.append(_cluster)
-	var _cluster_coms := []
-	for cl in _clusters:
-		var com := Vector3.ZERO
-		for q in cl:
-			com += q.position
-		com /= float(cl.size())
-		_cluster_coms.append(com)
-	for ring in rings:
-		if not is_instance_valid(ring) or not ring.active: continue
-		if ring.target_orbit_radius <= 0.0: continue
-		var best_dist := INF
-		var best_com: Vector3 = ring.nucleus_position
-		for com in _cluster_coms:
-			var d = ring.position.distance_to(com)
-			if d < best_dist:
-				best_dist = d
-				best_com = com
-		ring.nucleus_position = best_com
-	# Momentum conservation: zero each cluster's COM velocity
-	# Prevents numerical drift from force asymmetries in multi-body systems
-	for cl in _clusters:
-		var com_vel := Vector3.ZERO
-		var total_mf := 0.0
-		for q in cl:
-			var mf = q.mass_factor if q.mass_factor > 0.0 else 1.0
-			com_vel += q.velocity * mf
-			total_mf += mf
-		if total_mf > 0.0:
-			com_vel /= total_mf
+	# Physics: quark path only when quarks visible
+	if show_quarks:
+		compute_forces()
+		if _frame % 4 == 0:
+			check_bindings()
+			check_breakings()
+		if decay_mode and _frame % 15 == 0:
+			_check_resonance_decay()
+			_check_neutron_decay()
+		if _frame % 10 == 0:
+			energy = total_energy()
+		for v in vortices:
+			if is_instance_valid(v) and not v.is_dragging:
+				v.physics_update(phys_delta, v.force_accum)
+			if is_nan(v.position.x) or is_nan(v.position.y) or is_nan(v.position.z): v.position = Vector3(0,10,0)
+		# Per-cluster COM: cached BFS (every 8 frames), COM updates every frame
+		var _clusters: Array = []
+		if _frame % 8 == 0 or _cluster_cache_frame < 0:
+			var _visited := {}
+			_cluster_cache.clear()
+			for v in vortices:
+				if not is_instance_valid(v) or not v.visible: continue
+				var vid: int = v.get_instance_id()
+				if _visited.has(vid): continue
+				var _cluster := []
+				var _queue := [v]
+				_visited[vid] = true
+				while not _queue.is_empty():
+					var curr = _queue.pop_front()
+					_cluster.append(curr)
+					for other in vortices:
+						if not is_instance_valid(other): continue
+						var oid: int = other.get_instance_id()
+						if _visited.has(oid): continue
+						if curr.is_bound_to(other):
+							_visited[oid] = true
+							_queue.append(other)
+				if _cluster.size() >= 2:
+					_cluster_cache.append(_cluster)
+			_cluster_cache_frame = _frame
+		for cl in _cluster_cache:
+			var com := Vector3.ZERO
+			var valid := true
 			for q in cl:
-				q.velocity -= com_vel
+				if not is_instance_valid(q): valid = false; break
+				com += q.position
+			if not valid: continue
+			com /= float(cl.size())
+			_clusters.append(cl)
+			for ring in rings:
+				if not is_instance_valid(ring) or not ring.active: continue
+				if ring.target_orbit_radius <= 0.0: continue
+				var d = ring.position.distance_to(com)
+				if d < ring.position.distance_to(ring.nucleus_position) * 0.5 + 1.0:
+					ring.nucleus_position = com
+		for cl in _cluster_cache:
+			var com_vel := Vector3.ZERO
+			var total_mf := 0.0
+			var valid := true
+			for q in cl:
+				if not is_instance_valid(q): valid = false; break
+				var mf = q.mass_factor if q.mass_factor > 0.0 else 1.0
+				com_vel += q.velocity * mf
+				total_mf += mf
+			if valid and total_mf > 0.0:
+				com_vel /= total_mf
+				for q in cl:
+					q.velocity -= com_vel
+	# N1: Nucleon-Nucleon potential (SCVC: nucleons identified from color+isospin, not springs)
+	if _nn_enabled:
+		_compute_nn_forces()
+	update_springs()
 	# Update rings (always run)
 	for ring in rings:
 		if is_instance_valid(ring) and ring.active and not ring.is_dragging:
@@ -433,7 +487,9 @@ func _process(delta: float):
 				ring.set_meta("_vfm_velocities", merged_vels)
 				ring.physics_update_vfm(phys_delta)
 			else:
-				_compute_ring_forces(ring)
+				# Constrained rings skip forces (positions hard-set by SCVC constraint)
+				if ring.target_orbit_radius <= 0.0:
+					_compute_ring_forces(ring)
 				ring.physics_update(phys_delta, ring.get_meta("_ext_forces", []))
 	_update_batch_render()
 	_check_annihilation()
@@ -541,8 +597,13 @@ func check_bindings():
 	var n_active = active.size()
 	if n_active > 400: return
 	var sizes = [2]
-	if n_active <= 400: sizes.append(3)
-	if n_active <= 400: sizes.append(4)
+	# Count unbound - skip multi-body when all bound (saves O(N^3)/O(N^4))
+	var n_unbound := 0
+	for vv in vortices:
+		if is_instance_valid(vv) and vv.bound_partners.size() == 0:
+			n_unbound += 1
+	if n_unbound >= 3 and n_active <= 400: sizes.append(3)
+	if n_unbound >= 4 and n_active <= 400: sizes.append(4)
 	for size in sizes:
 		for combo in _combinations(n_active, size):
 			var real_combo = []
@@ -1030,6 +1091,9 @@ func toggle_snapshot():
 func toggle_freeze():
 	time_frozen = not time_frozen
 
+func toggle_quarks():
+	show_quarks = not show_quarks
+
 func toggle_decay():
 	decay_mode = not decay_mode
 
@@ -1076,7 +1140,11 @@ func remove_vortex(v: Node3D):
 	for sp in springs.duplicate():
 		if not is_instance_valid(sp): springs.erase(sp); continue
 		var sa = sp.get_meta("a", null); var sb = sp.get_meta("b", null)
-		if sa == v or sb == v: springs.erase(sp); sp.queue_free()
+		if sa == v or sb == v:
+				springs.erase(sp)
+				var spp = sp.get_parent()
+				if spp: spp.remove_child(sp)
+				sp.free()
 	vortices.erase(v)
 	_return_to_pool(v)
 
@@ -1098,8 +1166,23 @@ func clear_all():
 	for v in vortices.duplicate(): remove_vortex(v)
 	for r in rings.duplicate(): remove_ring(r)
 	_decay_immune.clear()
+	springs.clear()
 	_frame = 0
 	decay_mode = false
+	_cluster_cache.clear()
+	_cluster_cache_frame = -1
+	# Force-free any orphaned children (immediate, not deferred)
+	var orphans := []
+	for child in get_children():
+		if child is VortexRing or (child is Node3D and child.name.begins_with("VortexRing")):
+			orphans.append(child)
+	for child in orphans:
+		if is_instance_valid(child):
+			if child.has_method("deactivate"):
+				child.deactivate()
+			var p = child.get_parent()
+			if p: p.remove_child(child)
+			child.free()
 	# Force batch render reset: hide all instances immediately
 	if _batch_mesh and _batch_mesh.multimesh:
 		_batch_mesh.multimesh.visible_instance_count = 0
@@ -1109,6 +1192,7 @@ func clear_all():
 		_batch_ring_segs.multimesh.visible_instance_count = 0
 	if _batch_ring_springs and _batch_ring_springs.multimesh:
 		_batch_ring_springs.multimesh.visible_instance_count = 0
+
 
 func create_vortex(pos: Vector3, wc1: float, wc2: float, ww: float, wy: float, vel: Vector3 = Vector3.ZERO, mf: float = 0.0) -> Node3D:
 	var v = _acquire_from_pool()
@@ -1141,7 +1225,12 @@ func remove_ring(ring: Node3D):
 		rings.erase(ring)
 	if is_instance_valid(ring):
 		ring.deactivate()
-		ring.queue_free()
+		# Detach from tree and free IMMEDIATELY (not deferred queue_free)
+		# This prevents accumulation when rapidly switching scenes.
+		var parent = ring.get_parent()
+		if parent:
+			parent.remove_child(ring)
+		ring.free()
 
 func _compute_ring_forces(ring: Node3D):
 	# Compute external forces on each ring segment from point vortices and other rings
@@ -1303,6 +1392,136 @@ func _compute_point_force_from_rings(v: Node3D) -> Vector3:
 			var ft = -2.0 * G_EM * qr * qv * r / (xi2 + r * r)  # minus: F = -dE/dr
 			f += diff.normalized() * ft
 	return f
+
+
+# =====================================================================
+# =====================================================================
+# N1: Nucleon-Nucleon Potential (SCVC First-Principles, 2026-07-24)
+# =====================================================================
+# Identifies nucleons directly from quark SCVC winding numbers:
+#   Nucleon = 3 quarks with |sum(w_c)|~0 (color singlet) AND |sum(w_w)|~0.5 (isospin)
+#   Then applies V_NN between all nucleon pairs.
+#
+# NO dependence on spring connectivity (springs merge across nucleons -> broken clusters).
+# Spatial clustering uses proximity, nucleon ID uses SCVC winding algebra.
+#
+# SCVC HONESTY:
+#   - NN_SPIN_ISOSPIN_FACTOR=1.0: no per-nucleon spin tracking (known limitation)
+#   - NN_FORCE_CAP=200: numerical guard for r<0.2 sim where F_core~1500+
+#   - All other constants from SCVC first principles, zero free parameters
+func _compute_nn_forces():
+	# Step 1: Collect color-carrying quarks (skip neutrinos, leptons)
+	var quarks := []
+	for v in vortices:
+		if not is_instance_valid(v) or not v.visible: continue
+		var cmag := sqrt(v.w_c1 * v.w_c1 + v.w_c2 * v.w_c2)
+		if cmag < 0.05: continue  # no color charge -> not a quark
+		quarks.append(v)
+	
+	if quarks.size() < 6: return  # need at least 2 nucleons (6 quarks)
+	
+	# Step 2: Spatial clustering by proximity (cutoff ~2 sim units ~ 10 fm)
+	const SPATIAL_CUTOFF: float = 2.0
+	var visited := {}
+	var spatial_clusters := []
+	for q in quarks:
+		var qid: int = q.get_instance_id()
+		if visited.has(qid): continue
+		var cluster := []
+		var queue := [q]
+		visited[qid] = true
+		while not queue.is_empty():
+			var curr = queue.pop_front()
+			cluster.append(curr)
+			for other in quarks:
+				var oid: int = other.get_instance_id()
+				if visited.has(oid): continue
+				if curr.position.distance_to(other.position) < SPATIAL_CUTOFF:
+					visited[oid] = true
+					queue.append(other)
+		if cluster.size() >= 3:
+			spatial_clusters.append(cluster)
+	
+	# Step 3: Within each spatial cluster, identify nucleons (3-quark color singlets)
+	var nucleons := []  # Array[{com: Vector3, quarks: Array}]
+	const COLOR_EPSILON: float = 0.15
+	const ISOSPIN_EPSILON: float = 0.3
+	
+	for cl in spatial_clusters:
+		var remaining := cl.duplicate()
+		while remaining.size() >= 3:
+			var best_trio: Array = []
+			var best_score: float = 1e9
+			
+			# Try all 3-quark combinations in remaining
+			for i in range(remaining.size()):
+				for j in range(i + 1, remaining.size()):
+					for k in range(j + 1, remaining.size()):
+						var a = remaining[i]
+						var b = remaining[j]
+						var c = remaining[k]
+						var sum_c1: float = a.w_c1 + b.w_c1 + c.w_c1
+						var sum_c2: float = a.w_c2 + b.w_c2 + c.w_c2
+						var sum_w: float = a.w_w + b.w_w + c.w_w
+						var color_score: float = sqrt(sum_c1 * sum_c1 + sum_c2 * sum_c2)
+						var iso_score: float = abs(abs(sum_w) - 0.5)
+						var score: float = color_score + iso_score
+						if score < best_score:
+							best_score = score
+							best_trio = [i, j, k]
+			
+			# Accept trio if it forms a valid nucleon
+			if best_trio.size() == 3 and best_score < (COLOR_EPSILON + ISOSPIN_EPSILON):
+				var i_idx: int = best_trio[0]
+				var j_idx: int = best_trio[1]
+				var k_idx: int = best_trio[2]
+				var a = remaining[i_idx]
+				var b = remaining[j_idx]
+				var c = remaining[k_idx]
+				
+				var com := (a.position + b.position + c.position) / 3.0
+				nucleons.append({"com": com, "quarks": [a, b, c]})
+				
+				# Remove in descending index order (so shifting doesn't break later removes)
+				var r0: int = max(i_idx, max(j_idx, k_idx))
+				var r2: int = min(i_idx, min(j_idx, k_idx))
+				var r1: int = i_idx + j_idx + k_idx - r0 - r2
+				remaining.remove_at(r0)
+				remaining.remove_at(r1)
+				remaining.remove_at(r2)
+			else:
+				break  # can't form more nucleons from remaining quarks
+	
+	if nucleons.size() < 2: return
+	
+	# Step 4: Apply NN potential between all nucleon pairs
+	for i in range(nucleons.size()):
+		var ni = nucleons[i]
+		for j in range(i + 1, nucleons.size()):
+			var nj = nucleons[j]
+			var r_vec := nj["com"] - ni["com"]
+			var r: float = r_vec.length()
+			if r < 0.001: continue
+			var dir := r_vec.normalized()
+			
+			# OPEP (attractive): F = -factor*V_PI*exp(-M_PI*r)*(M_PI/r+1/r^2)
+			var f_pi: float = -NN_SPIN_ISOSPIN_FACTOR * NN_V_PI * exp(-NN_M_PI * r) * (NN_M_PI / r + 1.0 / (r * r))
+			# Hard core (repulsive): F = +factor*V_CORE*exp(-M_OMEGA*r)*(M_OMEGA/r+1/r^2)
+			var f_core: float = NN_SPIN_ISOSPIN_FACTOR * NN_V_CORE * exp(-NN_M_OMEGA * r) * (NN_M_OMEGA / r + 1.0 / (r * r))
+			var f_mag: float = f_pi + f_core
+			
+			if is_nan(f_mag) or is_inf(f_mag): continue
+			f_mag = clamp(f_mag, -NN_FORCE_CAP, NN_FORCE_CAP)
+			
+			# Distribute force to constituent quarks
+			var force := dir * f_mag
+			var fi := force / 3.0
+			var fj := -force / 3.0
+			for q in ni["quarks"]:
+				if is_instance_valid(q): q.force_accum += fi
+			for q in nj["quarks"]:
+				if is_instance_valid(q): q.force_accum += fj
+
 
 # ========== GeV BRIDGE ==========
 # Converts dimensionless simulation energy to physical MeV.

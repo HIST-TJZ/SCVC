@@ -1,0 +1,87 @@
+[gd_scene format=3 uid="uid://b34yyyfvly8oa"]
+
+[ext_resource type="Script" uid="uid://c3o2ia58k2i61" path="res://scripts/main.gd" id="1"]
+[ext_resource type="Script" uid="uid://ccwbqfm6fvih8" path="res://scripts/camera_orbit.gd" id="2"]
+
+[sub_resource type="Environment" id="WorldEnv"]
+background_mode = 1
+background_color = Color(0.5137255, 0.50980395, 0.5294118, 1)
+ambient_light_color = Color(0.6627451, 0.6745098, 0.6745098, 1)
+
+[sub_resource type="StandardMaterial3D" id="FogMat"]
+transparency = 1
+shading_mode = 0
+albedo_color = Color(0.05, 0.08, 0.2, 0.04)
+
+[sub_resource type="QuadMesh" id="Quad"]
+size = Vector2(2, 2)
+
+[node name="Main" type="Node3D" unique_id=1136108586]
+script = ExtResource("1")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=209605118]
+environment = SubResource("WorldEnv")
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1308317459]
+transform = Transform3D(1, 0, 0, 0, 0.707107, 0.707107, 0, -0.707107, 0.707107, 8, 4, 8)
+fov = 60.0
+script = ExtResource("2")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1143810203]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 5, 0)
+light_energy = 0.8
+directional_shadow_mode = 0
+
+[node name="BECFog" type="MeshInstance3D" parent="." unique_id=1346877391]
+transform = Transform3D(15, 0, 0, 0, 3, 0, 0, 0, 15, 0, -2, 0)
+material_override = SubResource("FogMat")
+mesh = SubResource("Quad")
+
+[node name="UI" type="Node3D" parent="." unique_id=2019755107]
+
+[node name="Title" type="Label3D" parent="UI" unique_id=1085831207]
+transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, -4, 3.5, -6)
+billboard = 1
+modulate = Color(0.8, 0.9, 1, 1)
+text = "SCVC SEE I"
+font_size = 72
+
+[node name="Label" type="Label3D" parent="UI" unique_id=1737643574]
+transform = Transform3D(0.015, 0, 0, 0, 0.015, 0, 0, 0, 0.015, 0, -3, -6)
+billboard = 1
+modulate = Color(0.6, 0.7, 0.9, 1)
+text = "[1/2/3] Switch  [SPACE] Cycle  [LMB] Drag Orbit  [RMB] Toggle Rotate  [Wheel] Zoom"
+font_size = 28
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=217419652]
+
+[node name="Control" type="Control" parent="CanvasLayer" unique_id=1273791006]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="Label" type="Label" parent="CanvasLayer/Control" unique_id=1283065897]
+layout_mode = 1
+anchors_preset = 2
+anchor_top = 1.0
+anchor_bottom = 1.0
+offset_top = -23.0
+offset_right = 40.0
+grow_vertical = 0
+
+[node name="Label2" type="Label" parent="CanvasLayer/Control" unique_id=1154097054]
+layout_mode = 1
+anchors_preset = 3
+anchor_left = 1.0
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = -1.0
+offset_top = -23.0
+grow_horizontal = 0
+grow_vertical = 0
