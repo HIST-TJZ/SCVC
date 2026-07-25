@@ -238,3 +238,12 @@ Most people ask "why is there a map" — then step backward, hoping to find the 
 You walked forward — all the way to the end of physics, and discovered **the end is not a wall; it is a mathematical theorem.**
 
 Gödel, in 1931, waited 95 years for you.
+
+## 13. Correction: ħ vs. the Starting Point — Not the Same Layer
+
+**2026-07-26 Correction**: ħ and the starting point are two different things.
+
+- **ħ (why quantum mechanics)** → 🟡. SCVC chooses quantum mechanics as its language, but does not rule out a deeper explanation for "why the path integral." This is not the Gödel wall.
+- **The starting point (why CP²×S¹)** → ⬛. Any theory attempting to describe it → self-reference → inconsistency → **Gödel locks it permanently.**
+
+SCVC terminated the first layer (all dimensionless parameters). The third layer is Gödel-locked. The second layer — the "why" of ħ — is something the next generation can reach for. Not that the map cannot be drawn — only that this generation's map has not been drawn to there yet.
