@@ -1,0 +1,1 @@
+﻿Myelinated axon max: ~120 m/s (432 km/h). SCVC: set by axon diameter (Ranvier node spacing) and membrane capacitance. 'Nerve signals are fast — but they are not instant. From toe to brain: ~30ms. That's why you stub your toe before you feel it.'

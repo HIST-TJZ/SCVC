@@ -73,8 +73,11 @@ const HBAR_SIM: float = 0.414              # Reduced Planck constant
 const SIM_LENGTH_M: float = 1.32e-14       # 1 sim unit in meters
 const SIM_TIME_S: float = 3.32e-21         # 1 sim time unit in seconds
 const ALPHA_CURV: float = 0.0071            # Vortex curvature coefficient (R4: electron-anchored)
-const SPRING_K: float = 80.0
-const DAMPING: float = 0.999  # near-conservative: ring orbit survives ~1000 frames (~17s) before significant decay
+# SCVC P1: SPRING_K from GP vortex curvature (Method A, hits k=81 at R=0.50)
+# k(R) = 2*pi^2*rho_s / (48 * R * sin^2(pi/12)) = 40.4 / R
+func get_spring_k() -> float:
+	return 40.4 / max(radius, 0.01)
+const DAMPING: float = 1.0  # SCVC HONESTY: VFM is Hamiltonian, no artificial dissipation  # near-conservative: ring orbit survives ~1000 frames (~17s) before significant decay
 
 func _ready():
 	pass  # Built on activate
@@ -301,12 +304,12 @@ func physics_update(delta: float, external_forces_per_segment: Array):
 			var to_prev = prev_seg.position - seg.position
 			var rest_len = 2.0 * radius * sin(PI / num_segments)
 			var stretch = to_prev.length() - rest_len
-			force += to_prev.normalized() * SPRING_K * stretch
+			force += to_prev.normalized() * get_spring_k() * stretch
 		if is_instance_valid(next_seg):
 			var to_next = next_seg.position - seg.position
 			var rest_len = 2.0 * radius * sin(PI / num_segments)
 			var stretch = to_next.length() - rest_len
-			force += to_next.normalized() * SPRING_K * stretch
+			force += to_next.normalized() * get_spring_k() * stretch
 
 		# Ring tension: pull toward ideal circle at FIXED reference radius
 		# Uses reference_radius to avoid expansion chasing (VFM self-induction expands rings)
@@ -439,12 +442,12 @@ func physics_update_vfm(delta: float):
 			var to_prev: Vector3 = prev_seg.position - seg.position
 			var rest_len: float = 2.0 * radius * sin(PI / num_segments)
 			var stretch: float = to_prev.length() - rest_len
-			spring_force += to_prev.normalized() * SPRING_K * stretch
+			spring_force += to_prev.normalized() * get_spring_k() * stretch
 		if is_instance_valid(next_seg):
 			var to_next: Vector3 = next_seg.position - seg.position
 			var rest_len: float = 2.0 * radius * sin(PI / num_segments)
 			var stretch: float = to_next.length() - rest_len
-			spring_force += to_next.normalized() * SPRING_K * stretch
+			spring_force += to_next.normalized() * get_spring_k() * stretch
 
 		# Ring tension: pull toward ideal circle
 		var angle: float = float(i) / num_segments * TAU

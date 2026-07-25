@@ -5,7 +5,7 @@
 
 [sub_resource type="Environment" id="WorldEnv"]
 background_mode = 1
-background_color = Color(0.5137255, 0.50980395, 0.5294118, 1)
+background_color = Color(0.21176471, 0.1882353, 0.21176471, 1)
 ambient_light_color = Color(0.6627451, 0.6745098, 0.6745098, 1)
 
 [sub_resource type="StandardMaterial3D" id="FogMat"]
@@ -37,22 +37,6 @@ transform = Transform3D(15, 0, 0, 0, 3, 0, 0, 0, 15, 0, -2, 0)
 material_override = SubResource("FogMat")
 mesh = SubResource("Quad")
 
-[node name="UI" type="Node3D" parent="." unique_id=2019755107]
-
-[node name="Title" type="Label3D" parent="UI" unique_id=1085831207]
-transform = Transform3D(0.02, 0, 0, 0, 0.02, 0, 0, 0, 0.02, -4, 3.5, -6)
-billboard = 1
-modulate = Color(0.8, 0.9, 1, 1)
-text = "SCVC SEE I"
-font_size = 72
-
-[node name="Label" type="Label3D" parent="UI" unique_id=1737643574]
-transform = Transform3D(0.015, 0, 0, 0, 0.015, 0, 0, 0, 0.015, 0, -3, -6)
-billboard = 1
-modulate = Color(0.6, 0.7, 0.9, 1)
-text = "[1/2/3] Switch  [SPACE] Cycle  [LMB] Drag Orbit  [RMB] Toggle Rotate  [Wheel] Zoom"
-font_size = 28
-
 [node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=217419652]
 
 [node name="Control" type="Control" parent="CanvasLayer" unique_id=1273791006]
@@ -64,6 +48,7 @@ grow_horizontal = 2
 grow_vertical = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+mouse_filter = 2
 
 [node name="Label" type="Label" parent="CanvasLayer/Control" unique_id=1283065897]
 layout_mode = 1
@@ -85,3 +70,41 @@ offset_left = -1.0
 offset_top = -23.0
 grow_horizontal = 0
 grow_vertical = 0
+
+[node name="Panel" type="Panel" parent="CanvasLayer/Control" unique_id=1455443247]
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -256.0
+offset_top = -321.0
+offset_bottom = 321.0
+grow_horizontal = 0
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Control/Panel" unique_id=1402751982]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="Panel" type="Panel" parent="CanvasLayer" unique_id=358594157]
+anchors_preset = 4
+anchor_top = 0.5
+anchor_bottom = 0.5
+offset_top = -343.5
+offset_right = 277.0
+offset_bottom = 343.5
+grow_vertical = 2
+
+[node name="VBoxContainer" type="VBoxContainer" parent="CanvasLayer/Panel" unique_id=450624678]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2

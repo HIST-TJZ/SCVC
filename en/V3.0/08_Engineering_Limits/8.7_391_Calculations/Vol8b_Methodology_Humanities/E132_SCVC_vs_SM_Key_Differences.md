@@ -1,0 +1,1 @@
+﻿Key difference: SCVC predicts the same numbers as SM with zero free parameters. SM's 26 'input' numbers become SCVC's 26 'output' numbers — derived from π. 'Both give 1/137.036. SM: because we measured it. SCVC: because π says so.'

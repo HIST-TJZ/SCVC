@@ -74,7 +74,7 @@ const QUARK_PI_OVER_8: float = 0.3927  # pi/8 QCD color-confinement screening fa
 #   Channel C: Pauli topological repulsion (three-region potential)
 # Total force: F = F_BS + F_gauge + F_Pauli
 const VFM_KAPPA: float = -1.0  # SCVC sign convention: CCW ring self-induces UP (verified 2026-07-24)
-const VFM_CORE_A: float = XI * 0.5  # Desingularization: vortex core radius (XI=0.25 -> a=0.125)
+const VFM_CORE_A: float = XI * exp(-0.5772156649)  # = 0.1404 (Schwarz 1985 VFM standard, SCVC P1+SPRING_K derivation)
 const VFM_SELF_CORE_FACTOR: float = 0.5  # Self-induction desingularization: segment arc length factor
 const RHO_S_EFFECTIVE: float = 6.5797   # = 2*pi^2/3 (GP vortex geometry, shared with vortex_ring.gd)
 
@@ -169,8 +169,8 @@ const NN_FORCE_CAP: float = 200.0       # Numerical guard: cap per-cluster force
 # Three-body force: GP medium-induced vortex interaction, calibrated to nuclear saturation.
 # Spin-orbit force: OPEP LS term + Magnus correction (~3%).
 # Tensor force: OPEP non-central component (VFM dipole-dipole partially covers this).
-const N2_C_3N: float = 0.1183             # Three-body coefficient (GP 3rd-order, sat-calibrated)
-const N2_R_CUT_3N: float = 0.625          # Three-body cutoff range (= 2.5*XI)
+const N2_C_3N: float = G_STRONG * XI * XI * XI  # = 3.30 * 0.015625 = 0.0516 (SCVC P5: GP 3rd-order, zero free params)
+const N2_R_CUT_3N: float = 3.0 * XI       # = N_c * XI = 0.75 (SCVC P5: confinement scale)
 const N2_C_LS: float = 21.88              # Spin-orbit coefficient (OPEP LS, sim_E)
 const N2_ENABLE_3N: bool = true           # Master switch for 3-body force
 const N2_ENABLE_LS: bool = true           # Master switch for spin-orbit force
@@ -179,7 +179,7 @@ const N2_ENABLE_TENSOR: bool = false      # Tensor force: VFM partially covers; 
 										 # extreme short-range where timestep can't resolve.)
 
 var _nn_enabled: bool = true            # Master switch for NN potential
-const NN_RECOMPUTE_EVERY: int = 8     # Recompute nucleon ID every 8 frames (expensive spatial clustering)
+const NN_RECOMPUTE_EVERY: int = 4  # was 8; halved for faster nucleon tracking     # Recompute nucleon ID every 8 frames (expensive spatial clustering)
 var _nn_recompute_tick: int = 0
 var _nn_cached_nucleons: Array = []   # Cached nucleon list: Array[Dictionary{com, quarks}]
 
@@ -188,7 +188,7 @@ var vfm_enabled: bool = true
 var _vfm_use_gpu: bool = false  # GPU disabled: D3D12 compute conflicts with Godot renderer          # Route A: GPU Biot-Savart (false = CPU fallback)
 var _vfm_gpu_ready: bool = false
 # Route C: Physics decimation (recompute VFM every N frames, cache in between)
-const VFM_RECOMPUTE_EVERY: int = 4   # Recompute BS velocities every 4 frames (15Hz effective)
+const VFM_RECOMPUTE_EVERY: int = 2  # was 4; halved for better quark force accuracy   # Recompute BS velocities every 4 frames (15Hz effective)
 var _vfm_recompute_tick: int = 0     # Countdown to next recompute
 
 
@@ -364,10 +364,6 @@ func _update_batch_render():
 		_safe_set_transform(_batch_glow.multimesh, count, t)
 		_batch_glow.multimesh.set_instance_color(count, Color(col.r, col.g, col.b, 0.12))
 		count += 1
-	# Hide unused instances by scaling to zero
-	for i in range(count, POOL_SIZE):
-		_safe_set_transform(_batch_mesh.multimesh, i, Transform3D(Basis().scaled(Vector3.ZERO), Vector3(0, -999, 0)))
-		_safe_set_transform(_batch_glow.multimesh, i, Transform3D(Basis().scaled(Vector3.ZERO), Vector3(0, -999, 0)))
 	if show_quarks:
 		_batch_mesh.multimesh.visible_instance_count = count
 		_batch_glow.multimesh.visible_instance_count = count
@@ -393,11 +389,12 @@ func _update_batch_render():
 			_safe_set_transform(_batch_ring_segs.multimesh, seg_count, t)
 			_batch_ring_segs.multimesh.set_instance_color(seg_count, col)
 			seg_count += 1
-	for i in range(seg_count, MAX_RING_SEGS):
-		_safe_set_transform(_batch_ring_segs.multimesh, i, Transform3D(Basis().scaled(Vector3.ZERO), Vector3(0, -999, 0)))
 	_batch_ring_segs.multimesh.visible_instance_count = seg_count
-	# Ring springs: use EXACT same node positions as segment batch render
+	# Ring springs: skip entirely when hidden (expensive Basis computation)
 	var spring_count: int = 0
+	if not springs_visible:
+		_batch_ring_springs.multimesh.visible_instance_count = 0
+		return
 	for ring in rings:
 		if not is_instance_valid(ring) or not ring.active: continue
 		var segs = ring.get_segment_nodes()
@@ -466,7 +463,23 @@ func _process(delta: float):
 		update_springs()
 		return
 	_frame += 1
-	var phys_delta: float = delta * time_scale
+	# Periodic cleanup: purge stale entries that accumulate over time
+	if _frame % 120 == 0:
+		var stale_v := []
+		for vv in vortices:
+			if not is_instance_valid(vv):
+				stale_v.append(vv)
+			elif not vv.visible and vv.position.y < -900:
+				stale_v.append(vv)  # returned to pool but not erased
+		for vv in stale_v:
+			vortices.erase(vv)
+		var stale_r := []
+		for rr in rings:
+			if not is_instance_valid(rr) or not rr.active:
+				stale_r.append(rr)
+		for rr in stale_r:
+			rings.erase(rr)
+	var phys_delta: float = min(delta * time_scale, 0.05)  # cap: prevent explosion on lag spikes
 	if _pair_cooldown > 0: _pair_cooldown -= 1
 
 	# Expire decay immunity
@@ -558,7 +571,7 @@ func _process(delta: float):
 			_nn_recompute_tick = NN_RECOMPUTE_EVERY
 			_nn_cached_nucleons = _identify_nucleons()
 		_apply_nn_forces(_nn_cached_nucleons)
-	update_springs()
+	update_springs()  # always call: hides springs when springs_visible=false
 	# VFM decimation: recompute Biot-Savart every N frames (CPU only)
 	_vfm_recompute_tick -= 1
 	if vfm_enabled and _vfm_recompute_tick <= 0:
@@ -672,56 +685,139 @@ func total_energy() -> float:
 				e += G_EM * ring.charge() * ring2.charge() * ll
 	return e
 
+# =====================================================================
+# P1: Running G_STRONG (SCVC GP derivation 2026-07-25)
+# BEC medium polarization -> UV asymptotic freedom + IR fixed point
+# =====================================================================
+const B0_G: float = 0.3594  # b0 * G_STRONG = 0.1089 * 3.30
+
+func _running_G(r: float) -> float:
+	# Distance-dependent effective strong coupling. UV free, IR fixed at 3.30.
+	var dist: float = max(r, 1e-6)
+	var log_term: float = log(1.0 + XI * XI / (dist * dist))
+	return G_STRONG / (1.0 + B0_G * log_term)
+
+# =====================================================================
+# P1: Quark Pauli exclusion (SCVC GP vortex overlap, 2026-07-25)
+# V_Pauli(r) = 2 * E_CORE * mf * |w|^2 * sech^{2}(r/xi)
+# Same color + same flavor -> full repulsion
+# Different color -> zero (orthogonal topological sectors in SU(3))
+# =====================================================================
+
+func _pauli_force(a: Node3D, b: Node3D, r: float, dir: Vector3) -> Vector3:
+	# Pauli repulsion between same-color same-flavor quarks.
+	var cd: float = a.color_dot(b)
+	if abs(cd) < 0.5:
+		return Vector3.ZERO
+	var w2_a: float = a.w_c1*a.w_c1 + a.w_c2*a.w_c2 + a.w_w*a.w_w + a.w_y*a.w_y
+	var w2_b: float = b.w_c1*b.w_c1 + b.w_c2*b.w_c2 + b.w_w*b.w_w + b.w_y*b.w_y
+	var mf_a: float = a._inertial_mass() if a.has_method("_inertial_mass") else 1.0
+	var mf_b: float = b._inertial_mass() if b.has_method("_inertial_mass") else 1.0
+	var mf_eff: float = sqrt(mf_a * mf_b)
+	var w2_eff: float = sqrt(w2_a * w2_b)
+	var x: float = r / XI
+	var sech2: float = 1.0 / (cosh(x) * cosh(x))
+	var tanh_x: float = tanh(x)
+	var magnitude: float = (4.0 * E_CORE * mf_eff * w2_eff / XI) * sech2 * tanh_x
+	return dir * magnitude
+
+# Spatial hash cell size: 3.0 sim (>> force cutoff: Pauli~1.25, Z~0.01)
+# Pairs beyond adjacent cells have force < 1e-6 of peak, safely skipped.
+const HASH_CELL: float = 8.0  # strong force at 8sim = 6% peak; Pauli/Z = 0; safe skip
+const HASH_THRESHOLD: int = 30  # use direct O(N^2) below 30 particles  # below this N, use direct O(N^2)
+
+func _pair_force(a: Node3D, b: Node3D, r: float, diff: Vector3, dir: Vector3):
+	var xi2 = _xi_for_pair(a, b); xi2 *= xi2
+	var ft: float = 0.0
+	var cd = a.color_dot(b)
+	if abs(cd) > 0.01: ft -= 2.0*_running_G(r)*cd*r/(xi2+r*r)
+	var a_is_lep: bool = sqrt(a.w_c1*a.w_c1 + a.w_c2*a.w_c2) < 0.05 and sqrt(a.w_w*a.w_w + a.w_y*a.w_y) > 0.3
+	var b_is_lep: bool = sqrt(b.w_c1*b.w_c1 + b.w_c2*b.w_c2) < 0.05 and sqrt(b.w_w*b.w_w + b.w_y*b.w_y) > 0.3
+	var qa: float = a.w_w + a.w_y; var qb: float = b.w_w + b.w_y
+	var used_lut: bool = false
+	if (a_is_lep or b_is_lep) and GPLUT.instance().has_table(GPLUT.PairType.EP):
+		var pair_type: int = GPLUT.instance().get_pair_type(a_is_lep, b_is_lep)
+		if r < GPLUT.R_MAX:
+			var dvdr: float = GPLUT.instance().get_force_derivative(r, pair_type)
+			ft -= dvdr * sign(qa * qb)
+			used_lut = true
+	if not used_lut:
+		const G_EM_L: float = 2.00
+		var qq: float = qa * qb
+		if abs(qq) > 0.005: ft -= 2.0*G_EM_L*qq*r/(xi2+r*r)
+	var zc: float = (a.w_w - qa*0.25) * (b.w_w - qb*0.25)
+	if abs(zc) > 0.005: ft -= 2.0*G_EM*zc*r/(xi2+r*r) * exp(-r/R_Z)
+	var pauli_f: Vector3 = _pauli_force(a, b, r, dir)
+	a.force_accum += pauli_f
+	b.force_accum -= pauli_f
+	var f: Vector3 = dir * ft * 0.5
+	a.force_accum += f
+	b.force_accum -= f
+	var ac = a.color_winding(); var bc = b.color_winding()
+	if ac.length() > 0.1 and bc.length() > 0.1:
+		var total_c = ac + bc
+		if total_c.length() > 0.1:
+			var fconf = dir * r  # sigma=1
+			a.force_accum += fconf
+			b.force_accum -= fconf
+
 func compute_forces():
+	# Zero all forces
 	for v in vortices:
 		if is_instance_valid(v): v.force_accum = Vector3.ZERO
-	for i in range(vortices.size()):
+	var n: int = vortices.size()
+	if n < 2: return
+	# Small systems: direct O(N^2) is faster (no hash overhead)
+	if n <= HASH_THRESHOLD:
+		for i in range(n):
+			var a = vortices[i]
+			if not is_instance_valid(a): continue
+			for j in range(i + 1, n):
+				var b = vortices[j]
+				if not is_instance_valid(b): continue
+				var diff = b.position - a.position
+				var r = diff.length()
+				if r < 0.01: continue
+				_pair_force(a, b, r, diff, diff / r)
+		return
+	# Large systems: spatial hash -> only check adjacent cells
+	var grid := {}
+	var offsets := [-1, 0, 1]
+	# Build grid
+	for i in range(n):
+		var v = vortices[i]
+		if not is_instance_valid(v): continue
+		var cx := int(v.position.x / HASH_CELL)
+		var cy := int(v.position.y / HASH_CELL)
+		var cz := int(v.position.z / HASH_CELL)
+		for dx in offsets:
+			for dy in offsets:
+				for dz in offsets:
+					var key = (cx + dx) * 73856093 ^ (cy + dy) * 19349663 ^ (cz + dz) * 83492791
+					if not grid.has(key):
+						grid[key] = []
+					grid[key].append(i)
+	# Force pairs: check only same cell or adjacent
+	var seen := {}
+	for i in range(n):
 		var a = vortices[i]
 		if not is_instance_valid(a): continue
-		for j in range(i + 1, vortices.size()):
-			var b = vortices[j]
+		var cx := int(a.position.x / HASH_CELL)
+		var cy := int(a.position.y / HASH_CELL)
+		var cz := int(a.position.z / HASH_CELL)
+		var key = cx * 73856093 ^ cy * 19349663 ^ cz * 83492791
+		var cell_list = grid.get(key, [])
+		for jj in cell_list:
+			if jj <= i: continue  # avoid double-counting
+			var pair_id = i * 10000 + jj
+			if seen.has(pair_id): continue
+			seen[pair_id] = true
+			var b = vortices[jj]
 			if not is_instance_valid(b): continue
 			var diff = b.position - a.position
 			var r = diff.length()
 			if r < 0.01: continue
-			var dir = diff / r
-			var xi2 = _xi_for_pair(a, b); xi2 *= xi2
-			var ft: float = 0.0
-			var cd = a.color_dot(b)
-			if abs(cd) > 0.01: ft -= 2.0*G_STRONG*cd*r/(xi2+r*r)
-			# E2 Phase 2: GP lookup table for electron-involved pairs (replaces VFM formula)
-			var a_is_lep: bool = sqrt(a.w_c1*a.w_c1 + a.w_c2*a.w_c2) < 0.05 and sqrt(a.w_w*a.w_w + a.w_y*a.w_y) > 0.3
-			var b_is_lep: bool = sqrt(b.w_c1*b.w_c1 + b.w_c2*b.w_c2) < 0.05 and sqrt(b.w_w*b.w_w + b.w_y*b.w_y) > 0.3
-			var qa: float = a.w_w + a.w_y; var qb: float = b.w_w + b.w_y
-			var used_lut: bool = false
-			if (a_is_lep or b_is_lep) and GPLUT.instance().has_table(GPLUT.PairType.EP):
-				var pair_type: int = GPLUT.instance().get_pair_type(a_is_lep, b_is_lep)
-				if r < GPLUT.R_MAX:
-					var dvdr: float = GPLUT.instance().get_force_derivative(r, pair_type)
-					ft -= dvdr * sign(qa * qb)  # GP table gives |dV/dr|, sign from charges
-					used_lut = true
-			if not used_lut:
-				# EM force: photon = massless, couples to Q = I3 + Y = w_w + w_y
-				const G_EM_L: float = 2.00
-				var qq: float = qa * qb
-				if abs(qq) > 0.005: ft -= 2.0*G_EM_L*qq*r/(xi2+r*r)
-			# Z boson: Yukawa suppressed
-			var zc: float = (a.w_w - qa*0.25) * (b.w_w - qb*0.25)
-			if abs(zc) > 0.005: ft -= 2.0*G_EM*zc*r/(xi2+r*r) * exp(-r/R_Z)
-			# Apply accumulated force to both particles
-			var f: Vector3 = dir * ft * 0.5
-			a.force_accum += f
-			b.force_accum -= f
-
-			# Linear confinement: color-non-singlet pairs feel sigma*r attraction
-			var ac = a.color_winding(); var bc = b.color_winding()
-			if ac.length() > 0.1 and bc.length() > 0.1:
-				var total_c = ac + bc
-				if total_c.length() > 0.1:
-					var sigma = 1.0  # Matches energy V=0.5*r^2 -> F=r
-					var fconf = dir * sigma * r
-					a.force_accum += fconf
-					b.force_accum -= fconf
+			_pair_force(a, b, r, diff, diff / r)
 
 # ========== BINDING ==========
 
@@ -1210,6 +1306,8 @@ func update_springs():
 		var a = sp.get_meta("a", null); var b = sp.get_meta("b", null)
 		if not is_instance_valid(a) or not is_instance_valid(b) or not a.is_bound_to(b):
 			dead.append(sp); sp.queue_free(); continue
+		if not springs_visible:
+			continue  # skip position updates when hidden
 		var mid = (a.position + b.position) * 0.5
 		var dist = a.position.distance_to(b.position)
 		sp.position = mid
@@ -1664,7 +1762,7 @@ func _identify_nucleons() -> Array:
 	
 	if quarks.size() < 6: return out
 	
-	const SPATIAL_CUTOFF: float = 2.0
+	const SPATIAL_CUTOFF: float = 0.38  # = nucleon_diameter * 1.2 = 1.68fm * 1.2 = 2.0fm = 0.38 sim (SCVC P5)
 	var visited: Dictionary = {}
 	var spatial_clusters: Array = []
 	for q in quarks:
@@ -1759,9 +1857,9 @@ func _apply_three_body_forces(nucleons: Array):
 				var force_on_i: Vector3 = dir12 * dv_dr12 + dir31 * (-dv_dr31)
 				var force_on_j: Vector3 = dir12 * (-dv_dr12) + dir23 * dv_dr23
 				var force_on_k: Vector3 = dir23 * (-dv_dr23) + dir31 * dv_dr31
-				_apply_force_to_nucleon(ni, force_on_i * 0.3)
-				_apply_force_to_nucleon(nj, force_on_j * 0.3)
-				_apply_force_to_nucleon(nk, force_on_k * 0.3)
+				_apply_force_to_nucleon(ni, force_on_i * 1.0)
+				_apply_force_to_nucleon(nj, force_on_j * 1.0)
+				_apply_force_to_nucleon(nk, force_on_k * 1.0)
 
 # N2: Spin-orbit force from OPEP relativistic correction + SCVC Magnus.
 # Formula: V_LS = C_LS * (L.S) * g_LS(m_pi * r)

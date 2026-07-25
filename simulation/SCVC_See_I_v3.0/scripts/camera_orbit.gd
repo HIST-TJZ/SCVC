@@ -2,7 +2,7 @@ extends Camera3D
 
 @export var target: Node3D
 @export var distance: float = 12.0
-@export var min_distance: float = 0.05
+@export var min_distance: float = 0.00001
 @export var max_distance: float = 200.0
 @export var orbit_speed: float = 0.004
 @export var pan_speed: float = 0.02

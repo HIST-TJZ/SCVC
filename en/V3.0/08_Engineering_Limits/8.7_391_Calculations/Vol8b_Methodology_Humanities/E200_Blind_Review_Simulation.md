@@ -1,0 +1,1 @@
+﻿Simulated peer review of SCVC. Key objections: (1) 'too ambitious', (2) 'where's the experimental test?', (3) 'vortex ring BEC is speculative'. Responses: (1) ambition≠error, (2) 391 ceilings are the test, (3) derivations are public. 'Science doesn't reject theories for being ambitious. It rejects them for being wrong. SCVC is falsifiable 391 ways.'

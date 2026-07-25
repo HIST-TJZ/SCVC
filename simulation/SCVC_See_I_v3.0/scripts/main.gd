@@ -5,8 +5,8 @@ extends Node3D
 
 @onready var physics_container: Node3D
 @onready var physics: Node
-@onready var ui_label: Label3D = $"UI/Label"
-@onready var ui_title: Label3D = $"UI/Title"
+@onready var ui_label: Label3D = null  # removed from scene
+@onready var ui_title: Label3D = null  # removed from scene
 @onready var status_label: Label = $"CanvasLayer/Control/Label"
 @onready var help_label: Label = $"CanvasLayer/Control/Label2"
 
@@ -77,13 +77,21 @@ const MF_T = 339840.0   # 6*pi^5 * DH * 3*sqrt(2)
 
 
 func _ready():
+	# CRITICAL: CanvasLayer fullscreen Control must IGNORE mouse so 3D Area3D gets events
+	var ctrl = $CanvasLayer/Control
+	if ctrl: ctrl.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	# Use scene-defined panels instead of dynamically creating them
+	_panel = $"CanvasLayer/Control/Panel"
+	if _panel: _panel.mouse_filter = Control.MOUSE_FILTER_STOP  # must receive clicks despite parent IGNORE
+	_scene_panel = $"CanvasLayer/Panel"
+	if _scene_panel: _scene_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	await get_tree().process_frame
 	await get_tree().process_frame
 	if not has_node("PhysicsContainer"):
 		var pc = Node3D.new(); pc.name = "PhysicsContainer"; add_child(pc)
 	physics_container = $PhysicsContainer
 	_setup_physics()
-	ui_title.text = "SCVC -- Emergent Standard Model"
+	if ui_title: ui_title.text = "SCVC -- Emergent Standard Model"
 	_update_status()
 	_update_ui_labels()
 	_update_help()
@@ -137,15 +145,15 @@ func _input(event):
 						physics.ring_visual_scale = max(physics.ring_visual_scale / 1.5, 0.3)
 					else:
 						physics.ring_visual_scale = min(physics.ring_visual_scale * 1.5, 10.0)
-					status_label.text = _tr("RING SIZE: %.1fx" % physics.ring_visual_scale, "???: %.1fx" % physics.ring_visual_scale)
+					status_label.text = _tr("RING SIZE: %.2fx" % physics.ring_visual_scale, "???: %.1fx" % physics.ring_visual_scale)
 			KEY_EQUAL:
 				if physics:
-					physics.quark_visual_scale = min(physics.quark_visual_scale * 1.08, 10.0)
-					status_label.text = "QUARK: %.1fx" % physics.quark_visual_scale
+					physics.quark_visual_scale = min(physics.quark_visual_scale * 1.25, 10.0)
+					status_label.text = "QUARK: %.3fx" % physics.quark_visual_scale
 			KEY_MINUS:
 				if physics:
-					physics.quark_visual_scale = max(physics.quark_visual_scale / 1.08, 0.01)
-					status_label.text = "QUARK: %.1fx" % physics.quark_visual_scale
+					physics.quark_visual_scale = max(physics.quark_visual_scale / 1.25, 0.0001)
+					status_label.text = "QUARK: %.3fx" % physics.quark_visual_scale
 			KEY_O: _toggle_orbit_view()
 			KEY_T: _speed_up()
 			KEY_G: _slow_down()
@@ -330,6 +338,7 @@ func _update_status():
 	status_label.text = "\n".join(lines)
 
 func _update_ui_labels():
+	if not ui_label: return
 	ui_label.text = _tr("[Panel] select  [Click] place  [Drag] move  [Scroll] zoom\n[Shift] anti  [P] freeze  [K] springs  [M] full SM  [L] lang\n[T/G] speed  [F] track  [B] quarks  [O] orbit  [V] decay  [Space] snap  [Del] clear", "[面板] 选择  [点击] 放置  [拖拽] 移动  [滚轮] 缩放\n[Shift] 反粒子  [P] 冻结  [K] 弹簧  [M] 全SM  [L] 语言\n[T/G] 速度  [F] 追踪  [B] 夸克  [O] 轨道  [V] 衰变  [Space] 快照  [Del] 清除")
 	_update_help()
 
@@ -1091,10 +1100,10 @@ func _scene_quadium():
 	_place_nucleus(Vector3.ZERO, 1, 3)
 	_place_electron_ring(Vector3.ZERO, 1, 0, 1, 400.0)
 # ========== PARTICLE SELECTION PANEL ==========
-var _panel: Control = null
+var _panel: Control = null  # set in _ready via scene node
 var _anti_toggle: CheckButton = null
 var _panel_buttons: Dictionary = {}
-var _scene_panel: Control = null
+var _scene_panel: Control = null  # set in _ready via scene node
 var _current_scene: String = ""
 
 func _toggle_springs():
@@ -1104,32 +1113,23 @@ func _toggle_springs():
 # ========== SCENE SELECTION PANEL ==========
 
 func _build_scene_panel():
-	var canvas = $CanvasLayer
-	_scene_panel = Panel.new()
-	_scene_panel.name = "ScenePanel"
-	_scene_panel.position = Vector2(10, 40)
-	_scene_panel.size = Vector2(150, 620)
-	var ps = StyleBoxFlat.new()
-	ps.bg_color = Color(0.05, 0.05, 0.08, 0.85)
-	ps.border_width_left = 1; ps.border_width_right = 1
-	ps.border_width_top = 1; ps.border_width_bottom = 1
-	ps.border_color = Color(0.3, 0.3, 0.4, 0.8)
-	ps.corner_radius_top_left = 8; ps.corner_radius_top_right = 8
-	ps.corner_radius_bottom_left = 8; ps.corner_radius_bottom_right = 8
-	_scene_panel.add_theme_stylebox_override("panel", ps)
-	canvas.add_child(_scene_panel)
-
-	var sv = ScrollContainer.new()
-	sv.name = "SceneScroll"
-	sv.position = Vector2(5, 5)
-	sv.size = Vector2(140, 610)
-	sv.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_scene_panel.add_child(sv)
-
-	var vbox = VBoxContainer.new()
-	vbox.name = "SceneList"
-	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	sv.add_child(vbox)
+	if not _scene_panel: return
+	# Use scene-defined VBoxContainer; create Scroll wrapper if needed
+	var vbox: VBoxContainer = _scene_panel.get_node_or_null("VBoxContainer")
+	if not vbox:
+		# Scene has VBoxContainer directly; wrap it for scrolling
+		vbox = VBoxContainer.new(); vbox.name = "ButtonList"
+		vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		var sv = ScrollContainer.new(); sv.name = "SceneScroll"
+		sv.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		sv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		sv.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		sv.add_child(vbox)
+		_scene_panel.add_child(sv)
+	else:
+		for child in vbox.get_children():
+			vbox.remove_child(child)
+			child.queue_free()
 
 	_add_scene_label(vbox, "=== SCENES ===")
 	_add_scene_label(vbox, "🟢=SCVC locked  🟡=QM/exp  🔴=Demo")
@@ -1240,32 +1240,26 @@ func _on_scene_button(scene_id: String):
 	_load_scene(scene_id)
 
 func _build_particle_panel():
-	var canvas = $CanvasLayer
-	_panel = Panel.new()
-	_panel.name = "ParticlePanel"
-	_panel.position = Vector2(DisplayServer.window_get_size().x - 170, 40)
-	_panel.size = Vector2(155, 600)
-	var ps = StyleBoxFlat.new()
-	ps.bg_color = Color(0.05, 0.05, 0.08, 0.85)
-	ps.border_width_left = 1; ps.border_width_right = 1
-	ps.border_width_top = 1; ps.border_width_bottom = 1
-	ps.border_color = Color(0.3, 0.3, 0.4, 0.8)
-	ps.corner_radius_top_left = 8; ps.corner_radius_top_right = 8
-	ps.corner_radius_bottom_left = 8; ps.corner_radius_bottom_right = 8
-	_panel.add_theme_stylebox_override("panel", ps)
-	canvas.add_child(_panel)
-
-	var scroll = ScrollContainer.new()
-	scroll.name = "Scroll"
-	scroll.position = Vector2(5, 5)
-	scroll.size = Vector2(145, 550)
-	scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-	_panel.add_child(scroll)
-
-	var vbox = VBoxContainer.new()
-	vbox.name = "ButtonList"
-	vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-	scroll.add_child(vbox)
+	if not _panel: return
+	var panel := _panel
+	# Ensure scroll is available
+	var scroll: ScrollContainer = panel.get_node_or_null("Scroll")
+	if not scroll:
+		scroll = ScrollContainer.new(); scroll.name = "Scroll"
+		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
+		panel.add_child(scroll)
+	# Reuse or create VBoxContainer
+	var vbox: VBoxContainer = panel.get_node_or_null("VBoxContainer")
+	if not vbox:
+		vbox = VBoxContainer.new(); vbox.name = "ButtonList"
+		vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		scroll.add_child(vbox)
+	else:
+		for child in vbox.get_children():
+			vbox.remove_child(child)
+			child.queue_free()
 
 	_anti_toggle = CheckButton.new()
 	_anti_toggle.text = "ANTI-PARTICLE"
@@ -1343,7 +1337,7 @@ func _on_panel_button(winding: Array, label: String, mf: float):
 
 func _on_spin_toggled(pressed: bool):
 	spin_up = pressed
-	var tb = _panel.get_node_or_null("Scroll/ButtonList/SpinToggle")
+	var tb = _panel.get_node_or_null("VBoxContainer/SpinToggle")
 	if tb: tb.text = "SPIN UP" if pressed else "SPIN DOWN"
 	_update_status()
 
@@ -1354,7 +1348,7 @@ func _on_anti_toggled(pressed: bool):
 func update_panel_visibility():
 	if not _panel: return
 	var in_sm = false
-	var scroll = _panel.get_node_or_null("Scroll/ButtonList")
+	var scroll = _panel.get_node_or_null("Scroll")
 	if not scroll: return
 	for child in scroll.get_children():
 		if child is Label and child.text.begins_with("── FULL SM"):

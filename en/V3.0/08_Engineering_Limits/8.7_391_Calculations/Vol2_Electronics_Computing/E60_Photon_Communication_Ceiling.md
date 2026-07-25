@@ -1,0 +1,1 @@
+﻿Optical fiber capacity: ~100 Tb/s per fiber (set by nonlinear effects + amplifier bandwidth). Free-space optical: ~Tb/s per beam (set by atmospheric turbulence). SCVC: ~1 Pb/s per fiber (using all available optical spectrum). 'Fiber is near its ceiling. Space lasers are the next frontier.'
