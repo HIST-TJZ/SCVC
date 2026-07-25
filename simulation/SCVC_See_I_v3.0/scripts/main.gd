@@ -81,8 +81,8 @@ func _ready():
 	var ctrl = $CanvasLayer/Control
 	if ctrl: ctrl.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	# Use scene-defined panels instead of dynamically creating them
-	_panel = $"CanvasLayer/Control/Panel"
-	if _panel: _panel.mouse_filter = Control.MOUSE_FILTER_STOP  # must receive clicks despite parent IGNORE
+	_panel = $"CanvasLayer/Panel2"
+	# _panel outside Control, no STOP needed
 	_scene_panel = $"CanvasLayer/Panel"
 	if _scene_panel: _scene_panel.mouse_filter = Control.MOUSE_FILTER_STOP
 	await get_tree().process_frame
@@ -132,7 +132,7 @@ func _input(event):
 		match event.keycode:
 			KEY_SHIFT: placing_anti = event.pressed; _update_status()
 			KEY_DELETE: _clear_all_vortices()
-			KEY_L: lang = 1 - lang; _update_status(); _update_ui_labels()
+			KEY_L: lang = 1 - lang; _update_status(); _update_ui_labels(); _update_help()
 			KEY_M: full_sm_mode = not full_sm_mode; update_panel_visibility(); _update_status(); _update_ui_labels()
 			KEY_SPACE: _toggle_snapshot()
 			KEY_P: _toggle_freeze()
@@ -338,8 +338,8 @@ func _update_status():
 	status_label.text = "\n".join(lines)
 
 func _update_ui_labels():
-	if not ui_label: return
-	ui_label.text = _tr("[Panel] select  [Click] place  [Drag] move  [Scroll] zoom\n[Shift] anti  [P] freeze  [K] springs  [M] full SM  [L] lang\n[T/G] speed  [F] track  [B] quarks  [O] orbit  [V] decay  [Space] snap  [Del] clear", "[面板] 选择  [点击] 放置  [拖拽] 移动  [滚轮] 缩放\n[Shift] 反粒子  [P] 冻结  [K] 弹簧  [M] 全SM  [L] 语言\n[T/G] 速度  [F] 追踪  [B] 夸克  [O] 轨道  [V] 衰变  [Space] 快照  [Del] 清除")
+	if ui_label:
+		ui_label.text = _tr("[Panel] select  [Click] place  [Drag] move  [Scroll] zoom\n[Shift] anti  [P] freeze  [K] springs  [M] full SM  [L] lang\n[T/G] speed  [F] track  [B] quarks  [O] orbit  [V] decay  [Space] snap  [Del] clear", "[面板] 选择  [点击] 放置  [拖拽] 移动  [滚轮] 缩放\n[Shift] 反粒子  [P] 冻结  [K] 弹簧  [M] 全SM  [L] 语言\n[T/G] 速度  [F] 追踪  [B] 夸克  [O] 轨道  [V] 衰变  [Space] 快照  [Del] 清除")
 	_update_help()
 
 func _update_help():
@@ -1114,22 +1114,25 @@ func _toggle_springs():
 
 func _build_scene_panel():
 	if not _scene_panel: return
-	# Use scene-defined VBoxContainer; create Scroll wrapper if needed
-	var vbox: VBoxContainer = _scene_panel.get_node_or_null("VBoxContainer")
-	if not vbox:
-		# Scene has VBoxContainer directly; wrap it for scrolling
-		vbox = VBoxContainer.new(); vbox.name = "ButtonList"
-		vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var sv = ScrollContainer.new(); sv.name = "SceneScroll"
+	# Find or create ScrollContainer > VBoxContainer structure
+	var sv: ScrollContainer = _scene_panel.get_node_or_null("ScrollContainer2")
+	if not sv:
+		sv = ScrollContainer.new(); sv.name = "ScrollContainer"
+		sv.set_anchors_preset(Control.PRESET_FULL_RECT)
 		sv.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-		sv.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		sv.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		sv.add_child(vbox)
 		_scene_panel.add_child(sv)
+	var vbox: VBoxContainer = sv.get_node_or_null("VBoxContainer")
+	if not vbox:
+		vbox = sv.get_node_or_null("ScrollContainer") as VBoxContainer  # user may have misnamed
+	if not vbox:
+		vbox = VBoxContainer.new(); vbox.name = "VBoxContainer"
+		vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		sv.add_child(vbox)
 	else:
 		for child in vbox.get_children():
 			vbox.remove_child(child)
 			child.queue_free()
+		vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL  # ensure scene-defined vbox also expands
 
 	_add_scene_label(vbox, "=== SCENES ===")
 	_add_scene_label(vbox, "🟢=SCVC locked  🟡=QM/exp  🔴=Demo")
@@ -1205,6 +1208,7 @@ func _add_scene_label(parent: VBoxContainer, text: String):
 	lbl.add_theme_color_override("font_color", Color(0.4, 0.6, 0.9))
 	lbl.add_theme_font_size_override("font_size", 11)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	parent.add_child(lbl)
 
 func _add_scene_button(parent: VBoxContainer, label: String, scene_id: String, hint: String):
@@ -1241,28 +1245,27 @@ func _on_scene_button(scene_id: String):
 
 func _build_particle_panel():
 	if not _panel: return
-	var panel := _panel
-	# Ensure scroll is available
-	var scroll: ScrollContainer = panel.get_node_or_null("Scroll")
-	if not scroll:
-		scroll = ScrollContainer.new(); scroll.name = "Scroll"
-		scroll.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
-		scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-		panel.add_child(scroll)
-	# Reuse or create VBoxContainer
-	var vbox: VBoxContainer = panel.get_node_or_null("VBoxContainer")
+	# Find or create ScrollContainer > VBoxContainer structure
+	var sv: ScrollContainer = _panel.get_node_or_null("ScrollContainer")
+	if not sv:
+		sv = ScrollContainer.new(); sv.name = "ScrollContainer"
+		sv.set_anchors_preset(Control.PRESET_FULL_RECT)
+		sv.horizontal_scroll_mode = ScrollContainer.SCROLL_MODE_DISABLED
+		_panel.add_child(sv)
+	var vbox: VBoxContainer = sv.get_node_or_null("VBoxContainer")
 	if not vbox:
-		vbox = VBoxContainer.new(); vbox.name = "ButtonList"
+		vbox = VBoxContainer.new(); vbox.name = "VBoxContainer"
 		vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		scroll.add_child(vbox)
+		sv.add_child(vbox)
 	else:
 		for child in vbox.get_children():
 			vbox.remove_child(child)
 			child.queue_free()
+		vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL  # ensure scene-defined vbox also expands
 
 	_anti_toggle = CheckButton.new()
 	_anti_toggle.text = "ANTI-PARTICLE"
+	_anti_toggle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_anti_toggle.toggled.connect(_on_anti_toggled)
 	_add_section_label(vbox, "")
 	vbox.add_child(_anti_toggle)
@@ -1270,6 +1273,7 @@ func _build_particle_panel():
 	var spin_toggle = CheckButton.new()
 	spin_toggle.name = "SpinToggle"
 	spin_toggle.text = "SPIN UP"
+	spin_toggle.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	spin_toggle.button_pressed = true
 	spin_toggle.toggled.connect(_on_spin_toggled)
 	vbox.add_child(spin_toggle)
@@ -1304,6 +1308,7 @@ func _add_section_label(parent: VBoxContainer, text: String):
 	lbl.add_theme_color_override("font_color", Color(0.5, 0.5, 0.6))
 	lbl.add_theme_font_size_override("font_size", 11)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	lbl.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	parent.add_child(lbl)
 
 func _add_particle_button(parent: VBoxContainer, label: String, color: Color, winding: Array, mf: float):
