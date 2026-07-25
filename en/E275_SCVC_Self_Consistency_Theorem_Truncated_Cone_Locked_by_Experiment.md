@@ -56,11 +56,21 @@ Vacuum = F=1 spinor BEC -> vortex rings have maximum size -> S1 is truncated -> 
 Chain:
 Unknowable starting point (postulate) -> vortex ring max size (physical) -> S1 truncated (geometric) -> symmetry broken -> DH = 4pi3+pi2+pi = 137 (our universe)
 
-Pi and boundary are two ways of writing the same thing.
-Pi = shape (volume). Boundary = why the shape looks like this (maximum size).
-Pi can write the shape — but WHY the shape is truncated rather than complete circles back to the unsayable.
+But a finer distinction is needed. The truncated cone shape may NOT be the unknowable starting point:
 
-See also: Appendix on the boundary of the map.
+| Layer | Question | Status |
+|:--:|:---|:--:|
+| 0 | Why existence (rather than nothing)? | ⬛ Truly unknowable (Godel) |
+| 1 | Why F=1 spinor BEC? | 🔵 Postulate (self-necessity) |
+| 2 | Why does vortex ring have max size? | 🟡 Possibly derivable |
+| 3 | What is the max size? | 🟡 Possibly derivable |
+| 4 | Truncated cone -> DH=137 | 🟢 Already derived |
+
+Layer 0 is unsayable. But layers 2-3 — why vortex rings have a maximum size, and what that size is — may be derivable from F=1 BEC physics.
+
+In a spinor BEC, the vortex ring size limit is set by the spin healing length. That length depends on spin-dependent interaction strength. If that interaction comes from CP2 gauge coupling geometry, then max size follows from geometry + postulate — not a free parameter.
+
+The truncated cone shape may not be a starting point — it is a natural consequence of F=1 BEC. Like ice crystal shape is not a starting point, but inevitable from water molecule interactions. Only layer 0 is truly unknowable.
 ## Relationship to E270, E272, E274
 E270: proposed truncated cone DH conjecture
 E272: discovered Kakeya-DH duality
