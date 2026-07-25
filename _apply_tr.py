@@ -1,1 +1,0 @@
-﻿import re, json, sys; sys.stdout.reconfigure(encoding='utf-8'); TR=json.load(open(sys.argv[1],'r',encoding='utf-8')); c=open(sys.argv[2],'r',encoding='utf-8').read(); [c:=c.replace(k,v) for k,v in TR.items() if k in c]; cn=len(re.findall(r'[\u4e00-\u9fff]',c)); open(sys.argv[2],'w',encoding='utf-8').write(c); print(f'Done: {cn} CN / {len(c)} total')
