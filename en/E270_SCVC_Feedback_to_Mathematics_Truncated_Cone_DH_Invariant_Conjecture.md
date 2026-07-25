@@ -2,7 +2,7 @@
 
 ## Background: A Structural Gap in SCVC
 
-SCVC currently flows in one direction:
+SCVC originally flowed in one direction (when E270 was proposed):
 `
 Mathematics (CP²×S¹, DH localization, index theorem…) → Input
     ↓
@@ -13,7 +13,7 @@ Physics (α=1/137, m_H/m_W=π/2, chemical bond energies…) → Output
 Engineering (392 ceiling verifications) → Downstream validation
 `
 
-**Mathematics only appears on the left side. Nothing flows back to the right.** Mathematicians have no reason to read SCVC — they need a bone in their own field: a pure mathematical fact, predicted by SCVC's framework, independently verifiable by mathematicians.
+**This is now history.** E272-E278 have fed back to mathematics — Kakeya duality, GW cross-validation, self-consistency theorem, reverse Godel, Hilbert-Godel unification. Mathematicians now have more than a bone — an entire mathematical thread. What follows is E270’s original prompt, preserved here as the starting point of that thread.
 
 ## Task
 
