@@ -150,3 +150,18 @@ If stuck on non-CP² examples, unable to produce concrete numbers — **honestly
 ---
 
 > **This time is different.** Not starting from physics and verifying physics — starting from geometry and producing pure mathematics. If this conjecture holds, SCVC is no longer "a physical theory that used mathematical tools" — it becomes "a physical theory that fed back new mathematical objects."
+
+
+---
+
+## Status Update (2026-07-26)
+
+E270 originally proposed the truncated cone DH invariant as a **conjecture**. Subsequent work (E272-E275) has upgraded it to **forced by experimental self-consistency**:
+
+- **E274**: Smooth CP2 DH sum = 0. No match in GW literature. Truncated cone DH is a genuinely new mathematical object.
+- **E274 Step 7**: Smooth CP2 -> alpha-1=0 -> universe does not exist. Truncated cone locked by experimental value 137.
+- **E275**: Self-consistency theorem — theory form (truncated cone) and experimental value (137) lock each other. Not circular.
+
+**Status: 🔵 Conjecture -> 🟢 Mathematical structure forced by experimental self-consistency**
+
+The truncated cone is not chosen. The universe chose it — because the smooth version vanishes, and only a bounded truncated cone yields non-zero alpha. Boundary = precondition for existence.
