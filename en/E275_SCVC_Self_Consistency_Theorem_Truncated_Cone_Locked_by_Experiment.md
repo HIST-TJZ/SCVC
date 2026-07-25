@@ -32,6 +32,35 @@ Vacuum condensate IS the boundary of CP2xS1.
 - Construct non-zero DH sum on smooth CP2xS1 -> E275 falsified
 - Prove no bounded toric DH can yield 137 -> E275 falsified
 
+
+
+---
+
+## Deep Structure: Mathematical Boundary = Godel Boundary
+
+E274 discovered: smooth CP2xS1 DH=0. A truncation boundary is needed for DH=137.
+This is the SAME boundary as the previously discovered unknowable starting point:
+
+| Layer | Name | Meaning |
+|:---|:---|:---|
+| Philosophy | Self-Necessity / Godel Wall | No sufficiently strong formal system can prove its own starting point |
+| Mathematics | Truncation Boundary | Smooth CP2xS1 DH=0. Only CP2x[0,h_max] yields non-zero DH |
+| Physics | Vortex Ring Maximum Size | Finite scale of vacuum condensate |
+
+Smooth CP2xS1 is a perfect closed system — symmetric, compact, self-consistent. Yet DH=0 inside it.
+Like Godel arithmetic — consistent but incomplete. Perfect closure = no universe.
+
+The boundary is something outside the system. Not derivable from CP2 toric geometry — it comes from the postulate:
+Vacuum = F=1 spinor BEC -> vortex rings have maximum size -> S1 is truncated -> boundary breaks symmetry -> DH=137.
+
+Chain:
+Unknowable starting point (postulate) -> vortex ring max size (physical) -> S1 truncated (geometric) -> symmetry broken -> DH = 4pi3+pi2+pi = 137 (our universe)
+
+Pi and boundary are two ways of writing the same thing.
+Pi = shape (volume). Boundary = why the shape looks like this (maximum size).
+Pi can write the shape — but WHY the shape is truncated rather than complete circles back to the unsayable.
+
+See also: Appendix on the boundary of the map.
 ## Relationship to E270, E272, E274
 E270: proposed truncated cone DH conjecture
 E272: discovered Kakeya-DH duality
