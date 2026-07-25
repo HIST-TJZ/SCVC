@@ -3,7 +3,7 @@
 ## Origin
 SCVC says: Physics = Geometry. But why CP2 truncated cone?
 Is there a mathematical SCVC — an unknowable origin from which
-all self-consistent mathematics grows?
+all self-consistent mathematical structures grow?
 
 ---
 
@@ -25,34 +25,56 @@ Generalizing to all mathematical structures:
 ## Core Conjecture
 
 > **To exist is to be self-consistent.** The unknowable origin generates
-> everything. Inconsistent structures self-destruct upon generation —
-> like smooth CP2 DH=0. Consistent ones survive. SCVC is merely one
-> survivor — the one we happen to inhabit.
+> everything. Inconsistent structures self-destruct upon generation.
+> Consistent ones survive. SCVC is merely one survivor.
 
 ---
 
 ## Cleaner Than Anthropic Reasoning
 
-Anthropic: constants are this way because otherwise we would not be here.
-This: constants are this way because all alternatives self-destruct.
-No observer needed. Only self-consistency.
+Anthropic: constants require an observer. This: constants require only self-consistency.
+Forward reasoning — from possible structures, see which survive.
 
 ---
 
 ## Smooth CP2 = Self-Destructing Math
-DH=0 -> no atoms -> mathematically equivalent to non-existence.
-Generated then immediately vanished.
+DH=0 -> no atoms -> mathematically equivalent to non-existence. Generated then vanished.
 
 ## Truncated Cone = Surviving Math
-Boundary -> DH!=0 -> finite alpha -> atoms exist.
-Not chosen — just did not die.
+Boundary -> DH!=0 -> finite alpha -> atoms exist. Not chosen — just did not die.
 
 ---
 
-## Falsifiability
-- Non-truncated structure with non-zero DH matching experiment -> E276 weakened
-- DH=0 structure producing non-trivial physics -> E276 falsified
+## Addendum 1: Why Not S2 x S1?
+
+S2 (= CP1) toric polytope = segment [0,h]. T2 fixed points: 2 (N/S poles).
+S2 x [0,h] DH: north pole contributes ~+Vol, south pole ~-Vol. Sum = 0.
+Only complex dimension >= 2 has non-trivial boundary DH.
+This explains CP2 (dim=2) rather than CP1 (dim=1).
 
 ---
 
-*E276: Existence = Self-Consistency Conjecture. 2026-07-26.*
+## Addendum 2: Formalized Conjecture
+
+Let M be compact toric manifold, dM its toric boundary.
+DH(M, no boundary) = 0 iff M is smooth and boundaryless.
+DH(M, dM) != 0 iff dM is nonempty and breaks equivariant symmetry.
+DH(M, dM)=0: self-destructing. DH(M, dM)!=0: surviving.
+Conjecture: surviving structures form a discrete spectrum.
+SCVC truncated cone = the one matching experimental constants.
+
+---
+
+## Addendum 3: Connection to E272-E275 Math Line
+
+E272: Kakeya-DH duality
+E273: Four-direction assessment (GW/mirror/moonshine/L-functions)
+E274: GW cross-validation -> truncated cone = new boundary invariant
+E275: Self-consistency theorem — truncated cone locked by experiment
+E276: Existence = self-consistency — the filter that makes math survive
+
+Math line: fixed points -> GW verification -> boundary invariant -> generation filter
+
+---
+
+*E276. 2026-07-26.*
