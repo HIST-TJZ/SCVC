@@ -1,0 +1,10 @@
+﻿python :   File "<string>", line 45
+At line:2 char:1
++ python -c "
++ ~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (  File "<string>", line 45:String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+    print('  S1��'����'����ס��(��������[0,pi]������)')
+          ^^^^^^^^^
+SyntaxError: invalid syntax. Perhaps you forgot a comma?
