@@ -17,6 +17,7 @@
 | 📖 **想看结论 / Quick Conclusions** | [cn/简洁推导版/](cn/简洁推导版/) ([EN](en/Summary_Derivation/)) | College physics |
 | 🔧 **工程师/好奇 / Engineer/Curious** | [E000 工程极限总字典](cn/08_工程极限/E000_工程极限总字典.md) | None — browse what interests you |
 | 🌍 **中文读者** | [cn/README.md](cn/README.md) | — |
+| 🤖 **AI研究者 / AI Researcher** | [AI_EXPERIMENTS.md](AI_EXPERIMENTS.md) → [SCVC-LoRA](https://github.com/HIST-TJZ/SCVC-LoRA) | ML/DL basics |
 | 🌐 **English readers** | [en/README.md](en/README.md) | — |
 
 ---
