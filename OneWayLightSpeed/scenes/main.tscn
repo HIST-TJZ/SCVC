@@ -1,0 +1,319 @@
+[gd_scene format=3 uid="uid://cwv8y7ss2j7ro"]
+
+[ext_resource type="Script" uid="uid://c52kl864ul2qe" path="res://scripts/main_simulation.gd" id="1_ms"]
+[ext_resource type="Script" uid="uid://c5aw3bulmoh73" path="res://scripts/camera_orbit.gd" id="2_co"]
+[ext_resource type="Script" uid="uid://jibgux8xm14w" path="res://scripts/unrolled_draw.gd" id="3_ud"]
+
+[sub_resource type="SphereMesh" id="sphere_laser"]
+radius = 0.06
+height = 0.12
+
+[sub_resource type="TorusMesh" id="torus_ring"]
+inner_radius = 1.96
+outer_radius = 2.04
+
+[sub_resource type="BoxMesh" id="box_dir"]
+size = Vector3(2, 0.04, 0.04)
+
+[sub_resource type="StyleBoxFlat" id="debug_style"]
+content_margin_left = 8.0
+content_margin_top = 6.0
+content_margin_right = 8.0
+content_margin_bottom = 6.0
+bg_color = Color(0.05, 0.05, 0.1, 0.75)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.3, 0.5, 0.8, 0.5)
+corner_radius_top_left = 5
+corner_radius_top_right = 5
+corner_radius_bottom_right = 5
+corner_radius_bottom_left = 5
+
+[sub_resource type="StyleBoxFlat" id="panel_style"]
+bg_color = Color(0.1, 0.1, 0.15, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.5, 0.8, 0.8)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+
+[node name="Main" type="Node3D" unique_id=135377807]
+script = ExtResource("1_ms")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="." unique_id=1854065577]
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=1847413017]
+transform = Transform3D(0.8, -0.558548, -0.1823868, 0.49999997, 0.8163394, -0.2735802, 0.3, 0.12889571, 0.94233173, 0, 0, 0)
+
+[node name="Camera3D" type="Camera3D" parent="." unique_id=1088981993]
+transform = Transform3D(0.707, 0, -0.707, 0.354, 0.866, 0.354, 0.612, -0.5, 0.612, 3.5, 4, 6)
+script = ExtResource("2_co")
+target = NodePath("../CylinderRig")
+distance = 9.0
+
+[node name="CylinderRig" type="Node3D" parent="." unique_id=1474402910]
+
+[node name="CylinderBody" type="CSGCylinder3D" parent="CylinderRig" unique_id=2074787305]
+transform = Transform3D(1, 0, 0, 0, -4.371139e-08, -1, 0, 1, -4.371139e-08, 0, 0, 0)
+radius = 2.0
+height = 1.0
+
+[node name="LaserIndicator" type="MeshInstance3D" parent="CylinderRig" unique_id=1869095385]
+mesh = SubResource("sphere_laser")
+
+[node name="LaserPlaneVis" type="Node3D" parent="CylinderRig" unique_id=500714798]
+
+[node name="LaserRing" type="MeshInstance3D" parent="CylinderRig/LaserPlaneVis" unique_id=92931470]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 0, 0, 0)
+mesh = SubResource("torus_ring")
+
+[node name="LaserDir" type="MeshInstance3D" parent="CylinderRig/LaserPlaneVis" unique_id=2033327433]
+mesh = SubResource("box_dir")
+
+[node name="TrajectoryContainer" type="Node3D" parent="." unique_id=228756159]
+
+[node name="UI" type="CanvasLayer" parent="." unique_id=266908316]
+
+[node name="DebugLabel" type="Label" parent="UI" unique_id=1464466406]
+offset_left = 10.0
+offset_top = 10.0
+offset_right = 310.0
+offset_bottom = 210.0
+theme_override_styles/normal = SubResource("debug_style")
+text = "Initializing..."
+
+[node name="ControlPanel" type="Panel" parent="UI" unique_id=2060467205]
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -320.0
+offset_top = -215.0
+offset_right = 320.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_styles/panel = SubResource("panel_style")
+
+[node name="VBox" type="VBoxContainer" parent="UI/ControlPanel" unique_id=1938746707]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 10.0
+offset_top = 8.0
+offset_right = -10.0
+offset_bottom = -8.0
+
+[node name="BtnRow" type="HBoxContainer" parent="UI/ControlPanel/VBox" unique_id=1610143443]
+layout_mode = 2
+alignment = 1
+
+[node name="PlayPauseBtn" type="Button" parent="UI/ControlPanel/VBox/BtnRow" unique_id=571843810]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Pause"
+
+[node name="ResetBtn" type="Button" parent="UI/ControlPanel/VBox/BtnRow" unique_id=2024985872]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Reset"
+
+[node name="ViewToggleBtn" type="Button" parent="UI/ControlPanel/VBox/BtnRow" unique_id=130980908]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Unrolled View"
+
+[node name="LangToggleBtn" type="Button" parent="UI/ControlPanel/VBox/BtnRow" unique_id=1871790340]
+layout_mode = 2
+text = "中"
+
+[node name="MissToggleBtn" type="Button" parent="UI/ControlPanel/VBox/BtnRow"]
+layout_mode = 2
+text = "Show Misses"
+
+[node name="LockBtn" type="Button" parent="UI/ControlPanel/VBox/BtnRow"]
+layout_mode = 2
+text = "Lock T:ON"
+
+[node name="MethodBtn" type="Button" parent="UI/ControlPanel/VBox/BtnRow"]
+layout_mode = 2
+text = "Method: Extr"
+
+[node name="SpeedRow" type="HBoxContainer" parent="UI/ControlPanel/VBox" unique_id=1306572758]
+layout_mode = 2
+
+[node name="SpeedLabel" type="Label" parent="UI/ControlPanel/VBox/SpeedRow" unique_id=88269908]
+layout_mode = 2
+text = "Speed v:"
+horizontal_alignment = 2
+
+[node name="SpeedSlider" type="HSlider" parent="UI/ControlPanel/VBox/SpeedRow" unique_id=660257525]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.1
+max_value = 5.0
+step = 0.001
+value = 1.0
+
+[node name="SpeedValue" type="Label" parent="UI/ControlPanel/VBox/SpeedRow" unique_id=441721291]
+layout_mode = 2
+text = "1.0 m/s"
+horizontal_alignment = 2
+
+[node name="OmegaRow" type="HBoxContainer" parent="UI/ControlPanel/VBox" unique_id=1355589355]
+layout_mode = 2
+
+[node name="OmegaLabel" type="Label" parent="UI/ControlPanel/VBox/OmegaRow" unique_id=1806805216]
+layout_mode = 2
+text = "Angular w:"
+horizontal_alignment = 2
+
+[node name="OmegaSlider" type="HSlider" parent="UI/ControlPanel/VBox/OmegaRow" unique_id=1068760405]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.5
+max_value = 20.0
+step = 0.001
+value = 6.28319
+
+[node name="OmegaValue" type="Label" parent="UI/ControlPanel/VBox/OmegaRow" unique_id=530771474]
+layout_mode = 2
+text = "6.283 rad/s"
+horizontal_alignment = 2
+
+[node name="DensityRow" type="HBoxContainer" parent="UI/ControlPanel/VBox" unique_id=1322357873]
+layout_mode = 2
+
+[node name="DensityLabel" type="Label" parent="UI/ControlPanel/VBox/DensityRow" unique_id=689981833]
+layout_mode = 2
+text = "Photons:"
+horizontal_alignment = 2
+
+[node name="DensitySlider" type="HSlider" parent="UI/ControlPanel/VBox/DensityRow" unique_id=203780684]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 10.0
+max_value = 20000.0
+step = 50.0
+value = 33.0
+
+[node name="DensityValue" type="Label" parent="UI/ControlPanel/VBox/DensityRow" unique_id=1160198934]
+layout_mode = 2
+text = "33 /s"
+horizontal_alignment = 2
+
+[node name="CRow" type="HBoxContainer" parent="UI/ControlPanel/VBox"]
+layout_mode = 2
+
+[node name="CLabel" type="Label" parent="UI/ControlPanel/VBox/CRow"]
+layout_mode = 2
+text = "c_sim:"
+horizontal_alignment = 2
+
+[node name="CSlider" type="HSlider" parent="UI/ControlPanel/VBox/CRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 5.0
+max_value = 10000.0
+value = 20.0
+step = 1.0
+
+[node name="CValue" type="Label" parent="UI/ControlPanel/VBox/CRow"]
+layout_mode = 2
+text = "20 m/s"
+horizontal_alignment = 2
+
+[node name="OffsetRow" type="HBoxContainer" parent="UI/ControlPanel/VBox"]
+layout_mode = 2
+
+[node name="OffsetLabel" type="Label" parent="UI/ControlPanel/VBox/OffsetRow"]
+layout_mode = 2
+text = "Start Dist:"
+horizontal_alignment = 2
+
+[node name="OffsetSlider" type="HSlider" parent="UI/ControlPanel/VBox/OffsetRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+min_value = 0.5
+max_value = 10.0
+value = 2.0
+step = 0.1
+
+[node name="OffsetValue" type="Label" parent="UI/ControlPanel/VBox/OffsetRow"]
+layout_mode = 2
+text = "2.0 m"
+horizontal_alignment = 2
+
+[node name="UnrolledView" type="Control" parent="UI" unique_id=1219257401]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="UnrolledBG" type="ColorRect" parent="UI/UnrolledView" unique_id=1190942315]
+layout_mode = 0
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.05, 0.05, 0.1, 0.92)
+
+[node name="UnrolledDraw" type="Control" parent="UI/UnrolledView" unique_id=1560591924]
+anchors_preset = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -480.0
+offset_top = -60.0
+offset_right = 480.0
+offset_bottom = 60.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("3_ud")
+
+[node name="GapLabel" type="Label" parent="UI/UnrolledView" unique_id=2035227186]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = 70.0
+offset_right = 300.0
+offset_bottom = 95.0
+text = "Gap: calculating..."
+horizontal_alignment = 1
+
+[node name="TitleLabel" type="Label" parent="UI/UnrolledView" unique_id=1242821728]
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -300.0
+offset_top = -95.0
+offset_right = 300.0
+offset_bottom = -70.0
+text = "Unrolled Cylinder Wall  (x = R*theta  |  y = z_hit  |  circle = photon hit)"
+horizontal_alignment = 1
+
+[node name="BackBtn" type="Button" parent="UI/UnrolledView" unique_id=1943066558]
+visible = false
+layout_mode = 0
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -60.0
+offset_top = 100.0
+offset_right = 60.0
+offset_bottom = 130.0
+text = "Back to 3D"
