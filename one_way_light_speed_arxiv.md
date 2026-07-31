@@ -1,4 +1,4 @@
-# One-Way Speed of Light via Rotating-Laser Trace Method
+﻿# One-Way Speed of Light via Rotating-Laser Trace Method
 
 **Authors**: [To be assigned]
 **Date**: July 31, 2026
@@ -253,6 +253,55 @@ Notice that $v$ does **not** appear in Equation (9). The dependence on $v$ cance
 see Section 6.1.
 
 A deeper consequence follows from the same algebra: the unknown initial angle $\theta_0$ also cancels. It appears in the intercept of Equation (3) but contributes only a rigid horizontal translation of the entire trace on the unfolded surface — it does not affect the slope $s$, the vertical offset $z_{\min}$, or the extrapolated displacement $\Delta x$. The experiment therefore requires **no alignment or calibration of initial conditions.** The laser may start from an arbitrary angle; the panel may begin its descent from an arbitrary height; the instant $t = 0$ need not be synchronized with any external clock. Every degree of freedom that would conventionally demand a simultaneity convention — the emission time, the initial orientation, the absolute velocity — is eliminated from the final formula. What remains is a purely spatial geometric relation among three locally measurable quantities: $\omega$, $R$, and $\Delta x$. The simultaneity loop is broken not by measuring time more accurately, but by designing the geometry so that time cancels out.
+
+
+### 2.5.1 Remark: automatic elimination of the initial angle $\theta_0$
+
+The intercept of equation (3) contains the unknown initial angle $\theta_0$—the direction the laser happened to be pointing at the start of the experiment, which we cannot know precisely. This is not a problem, because $\theta_0$ does not appear in the final formula, and it is not "subtracted out" in some step—the measurement quantity $\Delta x$ is translation-invariant by definition.
+
+We trace this step by step.
+
+**Step 1: Where $\theta_0$ sits in the equation.**
+
+The burn trace on the unrolled panel is the straight line:
+
+$$z' = \underbrace{\frac{v}{\omega R}}_{\text{slope } s} \cdot x' \;+\; \underbrace{\left(\frac{vR}{c} - \frac{v}{\omega}\theta_0\right)}_{\text{intercept } B}$$
+
+$\theta_0$ appears in the intercept $B$. This looks like an unknown that needs calibration.
+
+**Step 2: The only thing $\theta_0$ does.**
+
+Make the substitution $x' \to x' - R\theta_0$ (a constant shift along the arc direction):
+
+$$\begin{aligned}
+z' &= \frac{v}{\omega R} \cdot (x' - R\theta_0) + \frac{vR}{c} - \frac{v}{\omega}\theta_0 \\
+   &= \frac{v}{\omega R} \cdot x' + \frac{vR}{c}
+\end{aligned}$$
+
+$\theta_0$ has vanished. Its sole effect is to rigidly translate the entire burn trace by a distance $R\theta_0$ along the arc direction of the panel.
+
+**Step 3: $\Delta x$ is unaffected by translation.**
+
+$\Delta x$ is defined as the horizontal distance along the trace line from $z' = 0$ up to $z' = z_{\min} = vR/c$:
+
+$$\Delta x = \frac{z_{\min}}{s} = \frac{vR/c}{v/(\omega R)} = \frac{\omega R^2}{c}$$
+
+$$\boxed{c = \frac{\omega R^2}{\Delta x}}$$
+
+$\theta_0$ does not appear anywhere in this expression. We did not measure it and subtract it—it was never part of the geometric definition of $\Delta x$ to begin with. It is like drawing a diagonal line on a piece of paper and then shifting the paper 10 cm to the left: the slope of the line does not change, the line's distance from the edge of the paper does not change, and the relative position of any extrapolated intersection does not change. $\theta_0$ is that paper-shift.
+
+**Experimental implication.**
+
+| Must measure | Need not measure |
+|---|---|
+| $\omega$ (rotation rate)—one local clock or stroboscope | $\theta(t)$ (real-time laser pointing) |
+| $R$ (radius)—a ruler | $\theta_0$ (initial angle) |
+| $\Delta x$ (horizontal trace offset)—a microscope | any angular readout from a rotary encoder |
+
+A rotary encoder may be mounted beside the laser, but the elegance of the experiment is that **you never need to read it**. The encoder's only auxiliary use is to help keep $\omega$ constant—and even that can be replaced by a stroboscope or cycle counting.
+
+What this means: the laser can start from any arbitrary angle, with no alignment and no record of the starting orientation. Every initial condition that traditional methods require precise knowledge of—emission time, initial azimuth, absolute angle—is eliminated entirely by the final geometry.
+
 
 ### 2.6 Anisotropic case: the trace as a detector
 
@@ -530,4 +579,5 @@ The experiment occupies a unique niche in the landscape of light-speed phenomeno
 ```
 
 Existing Standard-Model Extension (SME) constraints on Lorentz violation achieve extraordinary precision ($|\delta c|/c \lesssim 10^{-17}$) but probe **round-trip** isotropy at specific wavelengths. This experiment probes **one-way** phenomenology in the $\lambda \sim 0.1$--$10$ m band -- a qualitatively different question. The two approaches are complementary, not competitive: the two approaches probe complementary regimes and are not mutually constraining.
+
 
