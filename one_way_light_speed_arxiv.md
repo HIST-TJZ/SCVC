@@ -12,115 +12,6 @@ We propose a benchtop-to-medium-scale experiment for measuring the one-way speed
 
 ---
 
-## 9. Discussion
-
-### 9.1 What is being measured, and what is not
-
-It is essential to be precise about the scope of this proposal:
-
-- **Method A measures anisotropy**: it detects whether the one-way speed of light depends on direction within the laser plane. It does not require measuring $z_{\min}$ and is not limited by the nanoscale of $vR/c$. The angular resolution is set by the straightness of the burn trace, which can be fit to sub-micrometer precision over a trace length of millimeters to centimeters.
-
-- **Method B attempts an absolute value** of $c$ but is blocked in practice by the impossibility of measuring $z_{\min} \approx 33$ nm with current microscopy. It is included here for completeness and as a target for future advances in nanoscale surface metrology.
-
-### 9.2 Has the simultaneity convention been circumvented?
-
-Yes, in the following sense. The Einstein simultaneity problem is about *remote* clock synchronization -- aligning clocks at A and B separated by a macroscopic distance, which requires knowing the one-way light travel time between them. Our experiment replaces remote clocks with a single rigid recording surface. All geometric measurements -- $R$, $\Delta x$, the trace slope, the baseline -- are made on this surface with a ruler and a microscope. No signal needs to travel between distant locations; no two clocks need to be compared.
-
-A possible objection is that the calibration of $\omega$ (via a tachometer or encoder) and of $v$ (for the periodic-lock condition) implicitly relies on laboratory timekeeping. However, these are *local* measurements -- the tachometer is co-located with the laser, and the descent speed is measured at a single point -- so the remote-synchronization deadlock does not apply. The force of this objection is qualitatively weaker than the original Einstein-Reichenbach loop.
-
-### 9.3 Potential circularities examined
-
-We have scrutinized the derivation for inadvertent circular reasoning. The central concern is whether Equation (1), which uses $c$ in the term $R/c(\theta)$, presupposes the very quantity it seeks to measure. The resolution is standard in experimental physics: Equation (1) is a *model prediction*. It says: *if* light travels at speed $c(\theta)$, *then* the burn trace will have shape $z'(\theta)$ given by (1). By measuring the shape, we test the model and -- if it passes -- extract $c(\theta)$. This is no more circular than using $g$ in a kinematic equation to predict a projectile's trajectory and then confirming $g$ from the impact point.
-
-An independent check: all quantities in Equation (9) -- $\omega$, $R$, $\Delta x$ -- can be measured without invoking $c$. $\omega$ is measured by a tachometer (mechanical or optical counting of rotations). $R$ is measured by a calibrated ruler or laser interferometer. $\Delta x$ is a geometric construction on the unfolded panel. None of these measurements require knowing the speed of light.
-
-### 9.4 Comparison with historical methods
-
-| | Foucault (1862) | Michelson (1879) | This work |
-|---|---|---|---|
-| Optical path | Round-trip, 40 m | Round-trip, 700 m | **One-way**, $ |
-| Rotating element | Small mirror | Octagonal mirror | Rotating laser source |
-| Recording | Spot displacement | Spot displacement | **Continuous burn trace** |
-| Amplification | Mirror rotation | Long path + mirror | $\omega$ amplifies spatial offset |
-| Clock sync | Not needed | Not needed | Not needed |
-| Reference frame | 3 separated components | 3 separated components | **Single rigid surface** |
-
-The key distinction is the reference frame. Foucault and Michelson distributed their measurement across at least three spatially separated components (rotating mirror, fixed mirror, screen). Determining the distances between these components requires a coordinate system external to the measurement itself --- implicitly, a simultaneity convention for relating positions at different locations.
-
-In the present scheme, the recording surface *is* the reference frame. After the run, the panel is unfolded into a plane. Every geometric quantity --- the trace slope $ an\alpha$, the vertical offset {\min}$, the baseline '' = 0$, the horizontal displacement $\Delta x$ --- is read directly from this surface with a ruler and a microscope. No external coordinate system is invoked. No distance between separated components needs to be calibrated. The surface carries its own geometry; the measurement is entirely internal to a single rigid body.
-
-This is not merely a convenience --- it is the feature that breaks the Einstein-Reichenbach simultaneity loop at the operational level. The simultaneity deadlock arises from needing to compare clocks (or positions) at two *different* spatial locations. When all measurements are performed on a single rigid surface, the concept of simultaneity between distant points never enters the analysis. The surface is its own clock: the burn trace encodes its own emission history in its geometry.### 9.5 Implications of possible outcomes
-
-The experiment addresses a parameter regime -- one-way propagation at $\lambda \sim 0.1$--$10$ m -- that has not been probed by existing tests of Lorentz invariance [8], which constrain round-trip isotropy with high precision at different scales. The 16 variants probe six independent coupling channels, each with a well-defined null hypothesis from established theory.
-
-**Null outcome.** If all 16 variants yield burn traces consistent with a straight line to within the estimated sensitivity of $|\delta c|/c \sim 5.8\%$ (see Appendix A), the results would:
-
-1. Place the first direct upper bound on one-way anisotropy at meter-scale wavelengths.
-2. Exclude coupling of $c$ to temperature, electromagnetic fields, gravitational gradients, inertial acceleration, chemical composition, and angular momentum at the $\sim 5\%$ level within a single experimental framework.
-3. Provide empirical support for the isotropy postulate that underpins the Einstein synchronization convention, complementing existing round-trip constraints.
-
-**Positive outcome.** A statistically significant deviation from linearity in any variant would indicate that the one-way speed of light depends on the corresponding physical condition. The interpretation would depend on the specific channel:
-
-| Variant | Observable | Possible interpretation |
-|---|---|---|
-| Temperature gradient | Trace curvature beyond $n(T)$ prediction | $c$ may have a state equation beyond the refractive index contribution. |
-| Same $n$, different chemical composition | Statistically distinct traces | Could indicate coupling to matter through a channel not captured by $n$ alone. |
-| Acoustic standing wave | Phase lag between density modulation and optical response | Would suggest a finite relaxation time for the light-matter interaction at this scale. |
-| Critical-point fluid | Trace roughness deviating from Ornstein-Zernike scaling | May indicate critical fluctuations in the propagation medium beyond those of the physical fluid. |
-| Static E/B field | Trace deviation correlated with field strength | Would be inconsistent with the field-independence of $c$ in vacuum. |
-| Gravitational gradient | Deviation beyond GR prediction | Could indicate a material-like response of light propagation to gravitational fields. |
-| Flowing medium | One-way Fresnel drag coefficient differing from round-trip value | Would be a clear signature of propagation asymmetry. |
-| Rotating panel / apparatus | Nonzero deviation | Not predicted by standard GR or QFT; would indicate coupling between rotation and EM propagation. |
-
-**Caveat.** Any positive result would require careful exclusion of systematic effects -- mechanical vibrations, thermal gradients, stray fields, surface artifacts -- before being attributed to new physics. The variants are designed with built-in control measurements (e.g., the same-$n$ variant has identical refractive index, density, temperature, and pressure for both fluids) precisely to isolate genuine deviations from experimental systematics.
-
-In all cases, the experiment would provide the first direct data on one-way light propagation in a wavelength band and across coupling channels that have not been explored experimentally. Whether the answer is null or positive, the result would represent a new class of empirical constraint on the nature of light propagation.
-## 10. Conclusion
-
-We have presented a self-contained experimental scheme for probing the one-way speed of light without remote clock synchronization. The method encodes photon flight time as a spatial offset on a moving recording surface and amplifies it via the angular velocity of a rotating laser.
-
-The experiment is practical at modest scale ($R \sim 5$--$10$ m, benchtop to small-room footprint), uses largely off-the-shelf components (laser, rotation stage, photosensitive film, optical microscope), and supports a rich family of variants that probe six independent coupling channels.
-
-**The core deliverable** is the first direct constraint on one-way anisotropy in a wavelength band ($\lambda \sim 0.1$--$10$ m) that has not been directly constrained for this observable. A null result would exclude $|\delta c|/c > 5.8\%$ across all 16 variants and establish a new empirical foundation for the isotropy postulate. A positive result -- a bent trace -- would be transformative.
-
-
----
-
-## Appendix A: Sensitivity Estimate
-
-The minimum detectable curvature in the burn trace determines the anisotropy sensitivity. For a trace of length $L$ on the unfolded panel and a microscope with pixel resolution $\delta_{\text{pix}} \sim 1$ μm, the minimum resolvable deviation from linearity is approximately
-
-$$
-\delta z'_{\min} \sim \frac{\delta_{\text{pix}}}{\sqrt{N}},
-$$
-
-where $N = L / \delta_{\text{pix}}$ is the number of independent resolution elements along the trace. For $L \sim 10$ cm and $\delta_{\text{pix}} \sim 1$ μm, $N \sim 10^5$ and $\delta z'_{\min} \sim 3$ nm.
-
-From Equation (11), $\delta z' = vR\,|\delta(1/c)|$. With $v = 1$ m/s and $R = 10$ m,
-
-$$
-\left|\frac{\delta c}{c}\right|_{\min} \sim \frac{\delta z'_{\min} \cdot c}{vR}
-\sim \frac{3 \times 10^{-9} \cdot 3 \times 10^8}{1 \cdot 10}
-\sim 0.09.
-$$
-
-This $\sim$9\% sensitivity is for a single run. Averaging over multiple traces, optimizing illumination to reduce the effective pixel size, and extending $L$ through multi-panel stitching (periodic-lock method) can bring this below 1\%. Under realistic first-generation conditions, we conservatively quote $|\delta c|/c \lesssim 5.8\%$ as the exclusion threshold for a null result.
-
----
-
-## Appendix B: Derivation of the Straight-Line Condition
-
-For completeness, we verify that Equation (3) is indeed a straight line. Writing it as
-
-$$
-z' = Ax + B,
-$$
-
-with $A = v/(\omega R)$ and $B = vR/c - (v/\omega)\theta_0$, both constants under the isotropy assumption $c(\theta) = c$. The slope $A$ depends on $v$, $\omega$, and $R$; the intercept $B$ depends on $v$, $\omega$, $R$, $c$, and the unknown initial angle $\theta_0$. The key point is that $A$ is independent of $c$ -- the slope is set purely by the kinematics of the apparatus, not by the speed of light. All $c$-dependence is confined to the intercept $B$, which manifests as the vertical offset $vR/c$ of the entire trace.
-
-
----
-
 ## 1. Introduction
 
 ### 1.1 The one-way problem
@@ -537,7 +428,7 @@ The 16 variants share a common workflow: (1) prepare the panel with the desired 
 \rho \sim 1600$ kg/m$^3$, tensile strength $\sim$3 GPa) are recommended for $R > 3$ m at $\omega > 300$ rad/s.
 
 
-﻿
+
 ### 7.4 Recording surface geometry: from narrow strip to modular arc
 
 A natural question is whether a narrow rectangular strip — far cheaper than a precision arc — could suffice. The answer is nuanced.
@@ -581,3 +472,124 @@ The experiment occupies a unique niche in the landscape of light-speed phenomeno
 Existing Standard-Model Extension (SME) constraints on Lorentz violation achieve extraordinary precision ($|\delta c|/c \lesssim 10^{-17}$) but probe **round-trip** isotropy at specific wavelengths. This experiment probes **one-way** phenomenology in the $\lambda \sim 0.1$--$10$ m band -- a qualitatively different question. The two approaches are complementary, not competitive: the two approaches probe complementary regimes and are not mutually constraining.
 
 
+
+
+## 9. Discussion
+
+### 9.1 What is being measured, and what is not
+
+It is essential to be precise about the scope of this proposal:
+
+- **Method A measures anisotropy**: it detects whether the one-way speed of light depends on direction within the laser plane. It does not require measuring $z_{\min}$ and is not limited by the nanoscale of $vR/c$. The angular resolution is set by the straightness of the burn trace, which can be fit to sub-micrometer precision over a trace length of millimeters to centimeters.
+
+- **Method B attempts an absolute value** of $c$ but is blocked in practice by the impossibility of measuring $z_{\min} \approx 33$ nm with current microscopy. It is included here for completeness and as a target for future advances in nanoscale surface metrology.
+
+### 9.2 Has the simultaneity convention been circumvented?
+
+Yes, in the following sense. The Einstein simultaneity problem is about *remote* clock synchronization -- aligning clocks at A and B separated by a macroscopic distance, which requires knowing the one-way light travel time between them. Our experiment replaces remote clocks with a single rigid recording surface. All geometric measurements -- $R$, $\Delta x$, the trace slope, the baseline -- are made on this surface with a ruler and a microscope. No signal needs to travel between distant locations; no two clocks need to be compared.
+
+A possible objection is that the calibration of $\omega$ (via a tachometer or encoder) and of $v$ (for the periodic-lock condition) implicitly relies on laboratory timekeeping. However, these are *local* measurements -- the tachometer is co-located with the laser, and the descent speed is measured at a single point -- so the remote-synchronization deadlock does not apply. The force of this objection is qualitatively weaker than the original Einstein-Reichenbach loop.
+
+### 9.3 Potential circularities examined
+
+We have scrutinized the derivation for inadvertent circular reasoning. The central concern is whether Equation (1), which uses $c$ in the term $R/c(\theta)$, presupposes the very quantity it seeks to measure. The resolution is standard in experimental physics: Equation (1) is a *model prediction*. It says: *if* light travels at speed $c(\theta)$, *then* the burn trace will have shape $z'(\theta)$ given by (1). By measuring the shape, we test the model and -- if it passes -- extract $c(\theta)$. This is no more circular than using $g$ in a kinematic equation to predict a projectile's trajectory and then confirming $g$ from the impact point.
+
+An independent check: all quantities in Equation (9) -- $\omega$, $R$, $\Delta x$ -- can be measured without invoking $c$. $\omega$ is measured by a tachometer (mechanical or optical counting of rotations). $R$ is measured by a calibrated ruler or laser interferometer. $\Delta x$ is a geometric construction on the unfolded panel. None of these measurements require knowing the speed of light.
+
+### 9.4 Comparison with historical methods
+
+| | Foucault (1862) | Michelson (1879) | This work |
+|---|---|---|---|
+| Optical path | Round-trip, 40 m | Round-trip, 700 m | **One-way**, $ |
+| Rotating element | Small mirror | Octagonal mirror | Rotating laser source |
+| Recording | Spot displacement | Spot displacement | **Continuous burn trace** |
+| Amplification | Mirror rotation | Long path + mirror | $\omega$ amplifies spatial offset |
+| Clock sync | Not needed | Not needed | Not needed |
+| Reference frame | 3 separated components | 3 separated components | **Single rigid surface** |
+
+The key distinction is the reference frame. Foucault and Michelson distributed their measurement across at least three spatially separated components (rotating mirror, fixed mirror, screen). Determining the distances between these components requires a coordinate system external to the measurement itself --- implicitly, a simultaneity convention for relating positions at different locations.
+
+In the present scheme, the recording surface *is* the reference frame. After the run, the panel is unfolded into a plane. Every geometric quantity --- the trace slope $ an\alpha$, the vertical offset {\min}$, the baseline '' = 0$, the horizontal displacement $\Delta x$ --- is read directly from this surface with a ruler and a microscope. No external coordinate system is invoked. No distance between separated components needs to be calibrated. The surface carries its own geometry; the measurement is entirely internal to a single rigid body.
+
+This is not merely a convenience --- it is the feature that breaks the Einstein-Reichenbach simultaneity loop at the operational level. The simultaneity deadlock arises from needing to compare clocks (or positions) at two *different* spatial locations. When all measurements are performed on a single rigid surface, the concept of simultaneity between distant points never enters the analysis. The surface is its own clock: the burn trace encodes its own emission history in its geometry.### 9.5 Implications of possible outcomes
+
+The experiment addresses a parameter regime -- one-way propagation at $\lambda \sim 0.1$--$10$ m -- that has not been probed by existing tests of Lorentz invariance [8], which constrain round-trip isotropy with high precision at different scales. The 16 variants probe six independent coupling channels, each with a well-defined null hypothesis from established theory.
+
+**Null outcome.** If all 16 variants yield burn traces consistent with a straight line to within the estimated sensitivity of $|\delta c|/c \sim 5.8\%$ (see Appendix A), the results would:
+
+1. Place the first direct upper bound on one-way anisotropy at meter-scale wavelengths.
+2. Exclude coupling of $c$ to temperature, electromagnetic fields, gravitational gradients, inertial acceleration, chemical composition, and angular momentum at the $\sim 5\%$ level within a single experimental framework.
+3. Provide empirical support for the isotropy postulate that underpins the Einstein synchronization convention, complementing existing round-trip constraints.
+
+**Positive outcome.** A statistically significant deviation from linearity in any variant would indicate that the one-way speed of light depends on the corresponding physical condition. The interpretation would depend on the specific channel:
+
+| Variant | Observable | Possible interpretation |
+|---|---|---|
+| Temperature gradient | Trace curvature beyond $n(T)$ prediction | $c$ may have a state equation beyond the refractive index contribution. |
+| Same $n$, different chemical composition | Statistically distinct traces | Could indicate coupling to matter through a channel not captured by $n$ alone. |
+| Acoustic standing wave | Phase lag between density modulation and optical response | Would suggest a finite relaxation time for the light-matter interaction at this scale. |
+| Critical-point fluid | Trace roughness deviating from Ornstein-Zernike scaling | May indicate critical fluctuations in the propagation medium beyond those of the physical fluid. |
+| Static E/B field | Trace deviation correlated with field strength | Would be inconsistent with the field-independence of $c$ in vacuum. |
+| Gravitational gradient | Deviation beyond GR prediction | Could indicate a material-like response of light propagation to gravitational fields. |
+| Flowing medium | One-way Fresnel drag coefficient differing from round-trip value | Would be a clear signature of propagation asymmetry. |
+| Rotating panel / apparatus | Nonzero deviation | Not predicted by standard GR or QFT; would indicate coupling between rotation and EM propagation. |
+
+**Caveat.** Any positive result would require careful exclusion of systematic effects -- mechanical vibrations, thermal gradients, stray fields, surface artifacts -- before being attributed to new physics. The variants are designed with built-in control measurements (e.g., the same-$n$ variant has identical refractive index, density, temperature, and pressure for both fluids) precisely to isolate genuine deviations from experimental systematics.
+
+In all cases, the experiment would provide the first direct data on one-way light propagation in a wavelength band and across coupling channels that have not been explored experimentally. Whether the answer is null or positive, the result would represent a new class of empirical constraint on the nature of light propagation.
+## 10. Conclusion
+
+We have presented a self-contained experimental scheme for probing the one-way speed of light without remote clock synchronization. The method encodes photon flight time as a spatial offset on a moving recording surface and amplifies it via the angular velocity of a rotating laser.
+
+The experiment is practical at modest scale ($R \sim 5$--$10$ m, benchtop to small-room footprint), uses largely off-the-shelf components (laser, rotation stage, photosensitive film, optical microscope), and supports a rich family of variants that probe six independent coupling channels.
+
+**The core deliverable** is the first direct constraint on one-way anisotropy in a wavelength band ($\lambda \sim 0.1$--$10$ m) that has not been directly constrained for this observable. A null result would exclude $|\delta c|/c > 5.8\%$ across all 16 variants and establish a new empirical foundation for the isotropy postulate. A positive result -- a bent trace -- would be transformative.
+
+
+---
+
+## Appendix A: Sensitivity Estimate
+
+The minimum detectable curvature in the burn trace determines the anisotropy sensitivity. For a trace of length $L$ on the unfolded panel and a microscope with pixel resolution $\delta_{\text{pix}} \sim 1$ μm, the minimum resolvable deviation from linearity is approximately
+
+$$
+\delta z'_{\min} \sim \frac{\delta_{\text{pix}}}{\sqrt{N}},
+$$
+
+where $N = L / \delta_{\text{pix}}$ is the number of independent resolution elements along the trace. For $L \sim 10$ cm and $\delta_{\text{pix}} \sim 1$ μm, $N \sim 10^5$ and $\delta z'_{\min} \sim 3$ nm.
+
+From Equation (11), $\delta z' = vR\,|\delta(1/c)|$. With $v = 1$ m/s and $R = 10$ m,
+
+$$
+\left|\frac{\delta c}{c}\right|_{\min} \sim \frac{\delta z'_{\min} \cdot c}{vR}
+\sim \frac{3 \times 10^{-9} \cdot 3 \times 10^8}{1 \cdot 10}
+\sim 0.09.
+$$
+
+This $\sim$9\% sensitivity is for a single run. Averaging over multiple traces, optimizing illumination to reduce the effective pixel size, and extending $L$ through multi-panel stitching (periodic-lock method) can bring this below 1\%. Under realistic first-generation conditions, we conservatively quote $|\delta c|/c \lesssim 5.8\%$ as the exclusion threshold for a null result.
+
+---
+
+## Appendix B: Derivation of the Straight-Line Condition
+
+For completeness, we verify that Equation (3) is indeed a straight line. Writing it as
+
+$$
+z' = Ax + B,
+$$
+
+with $A = v/(\omega R)$ and $B = vR/c - (v/\omega)\theta_0$, both constants under the isotropy assumption $c(\theta) = c$. The slope $A$ depends on $v$, $\omega$, and $R$; the intercept $B$ depends on $v$, $\omega$, $R$, $c$, and the unknown initial angle $\theta_0$. The key point is that $A$ is independent of $c$ -- the slope is set purely by the kinematics of the apparatus, not by the speed of light. All $c$-dependence is confined to the intercept $B$, which manifests as the vertical offset $vR/c$ of the entire trace.
+
+
+---
+
+## References
+
+1. Einstein, A. (1905). "Zur Elektrodynamik bewegter Korper." *Annalen der Physik*, 322(10), 891-921.
+2. Reichenbach, H. (1928). *Philosophie der Raum-Zeit-Lehre*. Walter de Gruyter.
+3. Grunbaum, A. (1973). *Philosophical Problems of Space and Time*. D. Reidel.
+4. Fizeau, H. (1849). "Sur une experience relative a la vitesse de propagation de la lumiere." *Comptes Rendus*, 29, 90-92.
+5. Foucault, L. (1862). "Determination experimentale de la vitesse de la lumiere." *Comptes Rendus*, 55, 501-503, 792-796.
+6. Michelson, A. A. (1879). "Experimental determination of the velocity of light." *Proceedings of the American Association for the Advancement of Science*, 28, 124-160.
+7. Fizeau, H. (1851). "Sur les hypotheses relatives a l'ether lumineux." *Comptes Rendus*, 33, 349-355.
+8. Kostelecky, V. A. & Russell, N. (2011). "Data tables for Lorentz and CPT violation." *Reviews of Modern Physics*, 83(1), 11-31.
