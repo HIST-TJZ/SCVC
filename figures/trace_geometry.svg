@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#333"/>
+    </marker>
+  </defs>
+  <rect width="800" height="800" fill="#ffffff"/>
+  <circle cx="400" cy="400" r="330" fill="#f6f6f6" stroke="#333" stroke-width="3"/>
+  <text x="70" y="60" font-family="sans-serif" font-size="18" fill="#222">圆盘俯视</text>
+  <line x1="400" y1="400" x2="633" y2="633" stroke="#333" stroke-width="2.5"/>
+  <text x="646" y="628" font-family="sans-serif" font-size="16" fill="#222">停机方向半径 θ_stop</text>
+  <line x1="400" y1="400" x2="616" y2="525" stroke="#888" stroke-width="1.5" stroke-dasharray="5 4"/>
+  <path d="M 616 525 A 250 250 0 0 1 577 577" fill="none" stroke="#007700" stroke-width="4"/>
+  <text x="500" y="545" font-family="sans-serif" font-size="16" fill="#007700">冻结段（半径 r0）</text>
+  <path d="M 730 400 C 718 430 700 458 668 497 C 652 517 632 524 616 525" fill="none" stroke="#cc0000" stroke-width="4"/>
+  <text x="690" y="320" font-family="sans-serif" font-size="16" fill="#cc0000">运动段（螺旋，半径递减）</text>
+  <circle cx="616" cy="525" r="8" fill="#000" stroke="#fff" stroke-width="2"/>
+  <text x="634" y="533" font-family="sans-serif" font-size="18" font-weight="bold" fill="#222">K</text>
+  <circle cx="577" cy="577" r="8" fill="#000" stroke="#fff" stroke-width="2"/>
+  <text x="545" y="585" font-family="sans-serif" font-size="18" font-weight="bold" fill="#222">P2</text>
+  <path d="M 478 445 A 90 90 0 0 1 464 464" fill="none" stroke="#222" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="490" y="455" font-family="sans-serif" font-size="18" font-weight="bold" fill="#222">ΔX</text>
+  <circle cx="400" cy="400" r="6" fill="#222"/>
+  <text x="370" y="390" font-family="sans-serif" font-size="16" fill="#222">O</text>
+  <text x="70" y="770" font-family="sans-serif" font-size="15" fill="#555">注：实际 ΔX = ωR/c 远小于图中角度，此处按示意放大。</text>
+</svg>
